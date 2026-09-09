@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 
-export default function Inicio() {
+export default function Home() {
   return (
     <>
       {/* Navbar Flotante Glassmorphism */}
@@ -39,7 +39,6 @@ export default function Inicio() {
             <section className="space-y-6">
               <aside className="inline-flex items-center gap-2 bg-emerald-100/70 border border-emerald-200 px-3.5 py-1.5 rounded-full text-xs font-semibold text-emerald-900">
                 <span className="w-2 h-2 bg-emerald-700 rounded-full animate-pulse"></span>
-                <span>ERP Vivero Inteligente · v2.0</span>
               </aside>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-extrabold text-slate-900 tracking-tight leading-tight">
