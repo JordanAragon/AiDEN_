@@ -79,7 +79,7 @@ export default function BarraSuperior() {
             </span>
             <section className="text-left hidden sm:block">
               <p className="text-sm font-medium text-slate-800 leading-none">
-                {role === "admin" ? "Ana García" : role === "supervisor" ? "Carlos Méndez" : "Luis Torres"}
+                {role === "admin" ? "Jordan Aragon" : role === "supervisor" ? "Kerzy Sanchez" : "Alejandro Guerrero"}
               </p>
               <p className="text-xs text-slate-400 mt-0.5">{roleLabel}</p>
             </section>
@@ -100,7 +100,7 @@ export default function BarraSuperior() {
                         onClick={() => {
                           setRole(r);
                           setShowProfile(false);
-                          navigate(r === "admin" ? "/dashboard" : r === "supervisor" ? "/dashboard" : "/dashboard");
+                          navigate(r === "admin" ? "/dashboard-admin" : r === "supervisor" ? "/dashboard-supervisor" : "/dashboard-operario");
                         }}
                         className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-50 flex items-center gap-2 capitalize ${role === r ? "text-emerald-600 font-semibold" : "text-slate-700"}`}
                       >

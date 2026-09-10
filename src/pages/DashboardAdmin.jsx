@@ -42,9 +42,9 @@ const roleData = [
 ];
 
 const auditLog = [
-  { user: "Ana García", action: "Modificó rol de Carlos Méndez → Supervisor", time: "hace 12 min" },
+  { user: "Jordan Aragon", action: "Modificó rol de Carlos Méndez → Supervisor", time: "hace 12 min" },
   { user: "Sistema", action: "Backup automático completado exitosamente", time: "hace 1 h" },
-  { user: "Ana García", action: "Creó usuario: Valentina Soto (Operaria)", time: "hace 2 h" },
+  { user: "Jordan Aragon", action: "Creó usuario: Valentina Soto (Operaria)", time: "hace 2 h" },
   { user: "Carlos Méndez", action: "Exportó reporte mensual de producción", time: "hace 3 h" },
   { user: "Sistema", action: "Alerta de temperatura resuelta automáticamente", time: "hace 5 h" },
 ];

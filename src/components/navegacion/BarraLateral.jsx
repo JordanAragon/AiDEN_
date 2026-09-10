@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", path: "/dashboard", icon: <LayoutDashboard size={18} /> },
+  { label: "Dashboard", path: "/dashboard-admin", icon: <LayoutDashboard size={18} /> },
   { label: "Inventario", path: "/inventario", icon: <Package size={18} /> },
   { label: "Producción", path: "/produccion", icon: <Sprout size={18} /> },
   { label: "Trazabilidad", path: "/trazabilidad", icon: <GitBranch size={18} /> },
@@ -32,6 +32,12 @@ const navItems = [
 export default function BarraLateral() {
   const [colapsado, setColapsado] = useState(false);
   const location = useLocation();
+
+  // Detecta en qué dashboard está el usuario actualmente
+  const esRutaDashboard = location.pathname.startsWith("/dashboard");
+
+  // Si está en un dashboard específico, conserva ese path; si no, por defecto usa /dashboard-admin
+  const pathDashboardActual = esRutaDashboard ? location.pathname : "/dashboard-admin";
 
   return (
     <aside
@@ -61,11 +67,16 @@ export default function BarraLateral() {
       <nav aria-label="Menú principal" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <ul className="space-y-1">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path;
+            const esDashboard = item.label === "Dashboard";
+            const targetPath = esDashboard ? pathDashboardActual : item.path;
+            const isActive = esDashboard
+              ? esRutaDashboard
+              : location.pathname === item.path;
+
             return (
-              <li key={item.path}>
+              <li key={item.label}>
                 <NavLink
-                  to={item.path}
+                  to={targetPath}
                   title={colapsado ? item.label : undefined}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${
                     colapsado ? "justify-center" : "justify-start"
@@ -83,7 +94,6 @@ export default function BarraLateral() {
           })}
         </ul>
       </nav>
-
 
       {/* Botón para colapsar/expandir el menú */}
       <button

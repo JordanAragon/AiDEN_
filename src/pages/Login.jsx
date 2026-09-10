@@ -12,7 +12,7 @@ export default function Login() {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    navigate("/dashboard");
+    navigate("/dashboard-admin");
   };
 
   return (
