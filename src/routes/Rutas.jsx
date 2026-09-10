@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
-import Signup from '../pages/Singup';
+import Signup from '../pages/Signup';
 import PlantillaPrincipal from '../plantillas/PlantillaPrincipal';
 import TableroAdministrador from '../pages/DashboardAdmin';
+import ForgotPassword from '../pages/ForgotPassword';
+import DashboardAdmin from '../pages/DashboardAdmin';
 
 export default function Rutas() {
   return (
@@ -16,6 +18,8 @@ export default function Rutas() {
         <Route element={<PlantillaPrincipal />}>
           <Route path="/dashboard" element={<TableroAdministrador />} />
         </Route>
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/dashboard-admin" element={<DashboardAdmin />} />
       </Routes>
     </BrowserRouter>
   );

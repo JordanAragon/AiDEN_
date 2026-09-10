@@ -4,16 +4,13 @@ import BarraSuperior from "../components/navegacion/BarraSuperior";
 
 export default function PlantillaPrincipal() {
   return (
-    <body className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-      <BarraLateral />
-
-      <section className="flex-1 flex flex-col min-w-0">
-        <BarraSuperior />
-
-        <main className="flex-1 p-8 overflow-y-auto">
-          <Outlet />
+    <section className="flex h-screen bg-aiden-bg overflow-hidden font-sans text-slate-900">
+      
+      <section className="flex flex-col flex-1 overflow-hidden">
+        
+        <main className="flex-1 overflow-y-auto p-6">
         </main>
       </section>
-    </body>
+    </section>
   );
 }
