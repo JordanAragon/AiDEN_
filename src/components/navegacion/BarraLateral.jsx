@@ -84,15 +84,6 @@ export default function BarraLateral() {
         </ul>
       </nav>
 
-      {/* Pie de navegación / Rol Activo */}
-      {!colapsado && (
-        <footer className="px-3 py-4 border-t border-[#E5EDE8]">
-          <section className="rounded-lg bg-emerald-50/60 p-3 border border-emerald-100">
-            <p className="text-xs font-semibold text-emerald-700 mb-0.5">Rol activo</p>
-            <p className="text-xs text-slate-500 capitalize">Administrador</p>
-          </section>
-        </footer>
-      )}
 
       {/* Botón para colapsar/expandir el menú */}
       <button

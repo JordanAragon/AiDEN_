@@ -40,6 +40,7 @@ export default function Inicio() {
       title: "Administrador",
       color: "#0A4F31",
       bg: "#E9F5EF",
+      path: "/dashboard-admin",
       features: ["Gestión de usuarios y roles", "Auditoría completa del sistema", "Configuración avanzada", "Acceso a todos los módulos", "Reportes estratégicos"],
     },
     {
@@ -47,6 +48,7 @@ export default function Inicio() {
       title: "Supervisor",
       color: "#157347",
       bg: "#F0FDF4",
+      path: "/dashboard-supervisor",
       features: ["Dashboard operativo completo", "Gestión de lotes y producción", "Control de inventario", "Monitoreo ambiental", "Incidencias de calidad"],
     },
     {
@@ -54,6 +56,7 @@ export default function Inicio() {
       title: "Operario",
       color: "#2563EB",
       bg: "#EFF6FF",
+      path: "/dashboard-operario",
       features: ["Tareas del día asignadas", "Registro de actividades", "Lotes a cargo", "Incidencias propias", "Producción personal"],
     },
   ];
@@ -173,7 +176,7 @@ export default function Inicio() {
                   <ArrowRight size={16} />
                 </Link>
                 <Link
-                  to="/dashboard"
+                  to="/dashboard-admin"
                   className="px-6 py-3 border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-sm transition-colors"
                 >
                   Ver Panel Demo
@@ -339,7 +342,7 @@ export default function Inicio() {
                 </section>
                 <button
                   type="button"
-                  onClick={() => navigate("/dashboard")}
+                  onClick={() => navigate(r.path)}
                   className="w-full py-2.5 px-4 border rounded-lg font-semibold text-sm transition-colors text-center"
                   style={{ borderColor: r.color + "40", color: r.color }}
                 >
