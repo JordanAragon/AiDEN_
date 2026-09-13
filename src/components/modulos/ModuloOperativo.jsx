@@ -1,17 +1,52 @@
-export default function ModuloOperativo({ titulo, descripcion }) {
+import { ArrowRight, CircleAlert, Search, Sprout, TrendingUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const CONFIGURACION = {
+  inventario: { etiqueta: "Operación", titulo: "Inventario", descripcion: "Controla existencias y detecta a tiempo lo que puede detener una actividad.", kpis: [["184", "insumos registrados"], ["12", "con stock bajo"], ["28", "movimientos este mes"]], atencion: "Sustrato Premium está por debajo del mínimo definido.", filas: [["Sustrato Premium", "Producción", "18 unidades", "Bajo"], ["Bandeja 128", "Producción", "146 unidades", "Disponible"], ["Fertilizante foliar", "Calidad", "42 litros", "Disponible"], ["Semilla de tomate", "Lote LT-2024-089", "8 sobres", "Bajo"]], relacionados: [["Producción", "/produccion"], ["Costos", "/costos"]] },
+  produccion: { etiqueta: "Operación", titulo: "Producción", descripcion: "Observa qué lotes están activos, qué etapa atraviesan y dónde hace falta actuar.", kpis: [["18", "lotes activos"], ["7", "en desarrollo"], ["4", "requieren atención"]], atencion: "El lote LT-2024-089 está listo para cosecha y tiene una incidencia ambiental abierta.", filas: [["LT-2024-089", "Tomate · 420 plantas", "Cosecha", "Atención"], ["LT-2024-091", "Lechuga · 680 plantas", "Desarrollo", "En curso"], ["LT-2024-094", "Cilantro · 310 plantas", "Germinación", "En curso"], ["LT-2024-097", "Pimentón · 260 plantas", "Adaptación", "En riesgo"]], relacionados: [["Trazabilidad", "/trazabilidad"], ["Ambiental", "/ambiental"], ["Calidad", "/calidad"], ["Costos", "/costos"]] },
+  trazabilidad: { etiqueta: "Seguimiento", titulo: "Trazabilidad", descripcion: "Reconstruye la historia de un lote desde su registro hasta su estado actual.", kpis: [["46", "lotes con historial"], ["182", "eventos registrados"], ["6", "eventos recientes"]], atencion: "El último registro del lote LT-2024-089 fue una inspección de calidad.", filas: [["LT-2024-089", "Inspección de calidad", "Hoy · 09:42", "Registrado"], ["LT-2024-091", "Cambio de etapa", "Ayer · 16:20", "Registrado"], ["LT-2024-094", "Riego registrado", "Ayer · 11:05", "Registrado"], ["LT-2024-097", "Incidencia ambiental", "12 sep · 15:31", "Atención"]], relacionados: [["Producción", "/produccion"], ["Calidad", "/calidad"], ["Ambiental", "/ambiental"]] },
+  ambiental: { etiqueta: "Seguimiento", titulo: "Ambiental", descripcion: "Relaciona temperatura, humedad e iluminación con el estado de los lotes.", kpis: [["24.8 °C", "temperatura media"], ["68 %", "humedad"], ["2", "alertas activas"]], atencion: "Invernadero 2 registra una temperatura superior al rango esperado.", filas: [["Invernadero 1", "23.9 °C · 65 % HR", "Dentro del rango", "Estable"], ["Invernadero 2", "28.6 °C · 71 % HR", "Temperatura alta", "Atención"], ["Área de germinación", "22.4 °C · 69 % HR", "Dentro del rango", "Estable"], ["Lote LT-2024-097", "Luminosidad baja", "Revisar ubicación", "En riesgo"]], relacionados: [["Producción", "/produccion"], ["Trazabilidad", "/trazabilidad"], ["Calidad", "/calidad"]] },
+  calidad: { etiqueta: "Seguimiento", titulo: "Calidad", descripcion: "Centraliza incidencias para entender qué pasó, a quién corresponde y cómo se resolvió.", kpis: [["9", "incidencias abiertas"], ["3", "alta prioridad"], ["17", "cerradas este mes"]], atencion: "Una incidencia de alta prioridad continúa abierta en el lote LT-2024-089.", filas: [["INC-031", "LT-2024-089", "Alta · hojas amarillas", "Abierta"], ["INC-028", "LT-2024-097", "Media · crecimiento", "En revisión"], ["INC-026", "LT-2024-091", "Baja · bandejas", "Cerrada"], ["INC-022", "LT-2024-088", "Media · humedad", "Cerrada"]], relacionados: [["Producción", "/produccion"], ["Trazabilidad", "/trazabilidad"], ["Personal", "/personal"]] },
+  costos: { etiqueta: "Seguimiento", titulo: "Costos", descripcion: "Lee el costo de la operación por lote y encuentra qué está moviendo el resultado.", kpis: [["$ 4.8 M", "costo acumulado"], ["$ 267 K", "promedio por lote"], ["62 %", "insumos y materiales"]], atencion: "LT-2024-097 supera en 14 % el costo promedio de los lotes activos.", filas: [["LT-2024-089", "420 plantas", "$ 318.000", "En rango"], ["LT-2024-091", "680 plantas", "$ 241.000", "En rango"], ["LT-2024-094", "310 plantas", "$ 184.000", "En rango"], ["LT-2024-097", "260 plantas", "$ 305.000", "Sobre promedio"]], relacionados: [["Producción", "/produccion"], ["Inventario", "/inventario"], ["Reportes", "/reportes"]] },
+  personal: { etiqueta: "Sistema", titulo: "Personal", descripcion: "Organiza responsabilidades y facilita saber quién tiene a cargo cada actividad.", kpis: [["14", "personas activas"], ["9", "operarios"], ["5", "supervisores y admin"]], atencion: "Hay 3 actividades de calidad sin responsable asignado.", filas: [["Laura M.", "Supervisor", "8 actividades", "Activo"], ["Andrés R.", "Operario", "5 actividades", "Activo"], ["Camila P.", "Operario", "4 actividades", "Activo"], ["Julián G.", "Operario", "3 actividades", "Pendiente"]], relacionados: [["Producción", "/produccion"], ["Calidad", "/calidad"], ["Reportes", "/reportes"]] },
+  reportes: { etiqueta: "Sistema", titulo: "Reportes", descripcion: "Convierte la información operativa en vistas filtradas que sirven para revisar y decidir.", kpis: [["8", "reportes disponibles"], ["23", "consultas recientes"], ["4", "áreas cubiertas"]], atencion: "El reporte de producción puede cruzarse con ambiente, calidad y costos para el lote seleccionado.", filas: [["Producción por lote", "Producción", "Actualizado hoy", "Disponible"], ["Costos por lote", "Costos", "Actualizado hoy", "Disponible"], ["Incidencias de calidad", "Calidad", "Actualizado hace 1 h", "Disponible"], ["Historial ambiental", "Ambiental", "Actualizado hoy", "Disponible"]], relacionados: [["Producción", "/produccion"], ["Costos", "/costos"], ["Calidad", "/calidad"]] },
+  configuracion: { etiqueta: "Sistema", titulo: "Configuración", descripcion: "Ajusta roles, preferencias y parámetros básicos de la experiencia AiDEN.", kpis: [["3", "roles definidos"], ["4", "preferencias activas"], ["1", "sesión actual"]], atencion: "Los datos remotos y la persistencia todavía no están conectados en este prototipo.", filas: [["Roles", "Admin · Supervisor · Operario", "3 perfiles", "Configurado"], ["Preferencias", "Interfaz y notificaciones", "4 opciones", "Configurado"], ["Datos", "Capa de demostración", "Sin backend", "Pendiente"], ["Sesión", "Usuario actual", "Local", "Activa"]], relacionados: [["Reportes", "/reportes"], ["Inteligencia", "/ia"]] },
+};
+
+export default function ModuloOperativo({ tipo }) {
+  const navigate = useNavigate();
+  const [busqueda, setBusqueda] = useState("");
+  const config = CONFIGURACION[tipo] || CONFIGURACION.configuracion;
+  const filas = useMemo(() => {
+    const termino = busqueda.trim().toLowerCase();
+    if (!termino) return config.filas;
+    return config.filas.filter((fila) => fila.some((celda) => String(celda).toLowerCase().includes(termino)));
+  }, [busqueda, config]);
+
   return (
-    <article className="space-y-4">
-      <header>
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">AiDEN</p>
-        <h1 className="mt-1 text-2xl font-bold text-slate-800">{titulo}</h1>
-        <p className="mt-1 text-sm text-slate-500">{descripcion}</p>
+    <article className="space-y-5">
+      <header className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <section><p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-600">{config.etiqueta}</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900">{config.titulo}</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">{config.descripcion}</p></section>
+        <p className="inline-flex items-center gap-2 text-xs font-medium text-slate-500"><Sprout size={14} />Datos de demostración</p>
       </header>
-      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <header>
-          <h2 className="text-base font-semibold text-slate-800">Vista operativa</h2>
-          <p className="mt-1 text-sm text-slate-500">Espacio preparado para trabajar con los datos del vivero.</p>
+      <section aria-label="Resumen del módulo" className="grid gap-3 md:grid-cols-3">
+        {config.kpis.map(([valor, etiqueta]) => <article key={etiqueta} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"><p className="text-2xl font-bold tracking-tight text-slate-900">{valor}</p><p className="mt-1 text-sm text-slate-500">{etiqueta}</p></article>)}
+      </section>
+      <aside className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3"><p className="flex items-start gap-2 text-sm font-medium text-amber-900"><CircleAlert size={17} className="mt-0.5 shrink-0" />{config.atencion}</p><p className="ml-6 mt-1 text-xs text-amber-700">La pantalla prioriza situaciones que podrían requerir una acción.</p></aside>
+      <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
+        <header className="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+          <section><h2 className="text-base font-semibold text-slate-900">Información relacionada</h2><p className="mt-1 text-xs text-slate-500">Los registros se presentan en contexto, no como datos aislados.</p></section>
+          <label className="relative block w-full sm:w-64"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={busqueda} onChange={(event) => setBusqueda(event.target.value)} type="search" placeholder="Buscar en este módulo" aria-label={`Buscar en ${config.titulo}`} className="w-full rounded-lg border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm outline-none transition focus:border-emerald-500" /></label>
         </header>
-        <p className="mt-5 text-sm text-slate-500">Datos de demostración. La capa de datos aún no está conectada.</p>
+        <section className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm"><thead className="border-b border-slate-100 bg-slate-50/70 text-xs uppercase tracking-wide text-slate-400"><tr><th className="px-4 py-3 font-semibold">Elemento</th><th className="px-4 py-3 font-semibold">Contexto</th><th className="px-4 py-3 font-semibold">Detalle</th><th className="px-4 py-3 font-semibold">Estado</th></tr></thead><tbody className="divide-y divide-slate-100">{filas.map((fila) => <tr key={`${fila[0]}-${fila[1]}`} className="transition hover:bg-slate-50/70"><td className="px-4 py-3 font-medium text-slate-800">{fila[0]}</td><td className="px-4 py-3 text-slate-600">{fila[1]}</td><td className="px-4 py-3 text-slate-500">{fila[2]}</td><td className="px-4 py-3"><span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">{fila[3]}</span></td></tr>)}</tbody></table>
+          {filas.length === 0 && <p className="p-6 text-center text-sm text-slate-500">No encontramos registros que coincidan con la búsqueda.</p>}
+        </section>
+      </section>
+      <section className="grid gap-4 lg:grid-cols-[1fr_auto]">
+        <article className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm"><header><h2 className="text-base font-semibold text-slate-900">Conectado con</h2><p className="mt-1 text-sm text-slate-500">Navega a la siguiente pieza de la misma historia operativa.</p></header><nav aria-label={`Módulos relacionados con ${config.titulo}`} className="mt-4 flex flex-wrap gap-2">{config.relacionados.map(([nombre, ruta]) => <button key={ruta} type="button" onClick={() => navigate(ruta)} className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800">{nombre}<ArrowRight size={14} /></button>)}</nav></article>
+        <aside className="rounded-xl border border-emerald-100 bg-emerald-50/70 p-5 lg:w-72"><TrendingUp size={18} className="text-emerald-700" /><p className="mt-3 text-sm font-semibold text-emerald-950">La operación en contexto</p><p className="mt-1 text-xs leading-relaxed text-emerald-800">Los datos mostrados aquí representan la lógica visual del sistema mientras la capa de datos real permanece pendiente.</p></aside>
       </section>
     </article>
   );
