@@ -1,7 +1,6 @@
 import {
   ArrowDownRight,
   ArrowRight,
-  BarChart3,
   BrainCircuit,
   CircleDollarSign,
   FileText,
@@ -66,19 +65,16 @@ export default function Inicio() {
             <span className="marca-icono" aria-hidden="true"><Leaf size={17} /></span>
             <span>AiDEN</span>
           </Link>
-
           <ul className="enlaces-navegacion">
             <li><a href="#que-es">¿Qué es?</a></li>
             <li><a href="#lote">Lote</a></li>
             <li><a href="#operacion">Operación</a></li>
             <li><a href="#modulos">Módulos</a></li>
           </ul>
-
           <section className="acciones-navegacion">
             <Link to="/login" className="boton boton-secundario">Iniciar sesión</Link>
             <Link to="/signup" className="boton boton-principal">Registrarse</Link>
           </section>
-
           <button
             type="button"
             className="boton-menu"
@@ -88,7 +84,6 @@ export default function Inicio() {
             {menuAbierto ? <X size={21} /> : <Menu size={21} />}
           </button>
         </nav>
-
         {menuAbierto && (
           <nav className="menu-movil" aria-label="Navegación móvil">
             <ul>
@@ -114,7 +109,7 @@ export default function Inicio() {
               AiDEN conecta producción, ambiente, inventario, calidad, trazabilidad y costos para que la operación tenga una historia clara de principio a fin.
             </p>
             <section className="hero-acciones">
-              <Link to="/signup" className="boton boton-principal boton-grande">Entrar a AiDEN <ArrowRight size={17} /></Link>
+              <Link to="/signup" className="boton boton-principal boton-grande">Comenzar en AiDEN <ArrowRight size={17} /></Link>
               <a href="#que-es" className="boton boton-texto">Conocer el proyecto <ArrowDownRight size={17} /></a>
             </section>
             <section className="hero-datos" aria-label="Datos del proyecto">
@@ -161,12 +156,8 @@ export default function Inicio() {
           <section className="sobre-contenido">
             <article>
               <p className="sobre-destacado">AiDEN es una plataforma web para organizar y centralizar la gestión operativa de viveros agrícolas.</p>
-              <p>
-                El proyecto nace como una propuesta académica para llevar una problemática concreta a un sistema de software claro: reunir la información de la operación y hacerla más sencilla de consultar.
-              </p>
-              <p>
-                Su idea central es conectar los datos alrededor del lote para entender qué pasó, qué está ocurriendo y qué necesita atención.
-              </p>
+              <p>El proyecto nace como una propuesta académica para llevar una problemática concreta a un sistema de software claro: reunir la información de la operación y hacerla más sencilla de consultar.</p>
+              <p>Su idea central es conectar los datos alrededor del lote para entender qué pasó, qué está ocurriendo y qué necesita atención.</p>
             </article>
             <ol className="sobre-pilares">
               <li><strong>01</strong><span>Centralizar</span><p>La información deja de estar repartida.</p></li>
