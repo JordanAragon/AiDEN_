@@ -10,25 +10,17 @@ import ForgotPassword from "../pages/ForgotPassword";
 import InteligenciaArtificial from "../pages/InteligenciaArtificial";
 import InformacionLegal from "../pages/InformacionLegal";
 import RutaProtegida from "../components/autenticacion/RutaProtegida";
+import ModuloOperativo from "../components/modulos/ModuloOperativo";
 
-function ModuloVacio({ titulo, descripcion }) {
-  return (
-    <article className="space-y-3">
-      <header><h1 className="text-2xl font-bold text-slate-800">{titulo}</h1><p className="text-sm text-slate-500 mt-1">{descripcion}</p></header>
-      <section className="bg-white border border-slate-200 rounded-xl p-8 shadow-sm"><p className="text-sm text-slate-500">Módulo preparado para integrar sus datos y operaciones.</p></section>
-    </article>
-  );
-}
-
-function Configuracion() { return <ModuloVacio titulo="Configuración" descripcion="Administra las preferencias generales del sistema." />; }
-function Reportes() { return <ModuloVacio titulo="Reportes" descripcion="Consulta y organiza la información operativa del vivero." />; }
-function Inventario() { return <ModuloVacio titulo="Inventario" descripcion="Controla existencias, movimientos y niveles de stock." />; }
-function Produccion() { return <ModuloVacio titulo="Producción" descripcion="Consulta lotes, etapas y actividades productivas." />; }
-function Trazabilidad() { return <ModuloVacio titulo="Trazabilidad" descripcion="Da seguimiento al recorrido y estado de cada lote." />; }
-function Ambiental() { return <ModuloVacio titulo="Ambiental" descripcion="Consulta las condiciones ambientales registradas." />; }
-function Calidad() { return <ModuloVacio titulo="Calidad" descripcion="Gestiona incidencias y controles de calidad." />; }
-function Costos() { return <ModuloVacio titulo="Costos" descripcion="Organiza costos y comportamiento financiero de la operación." />; }
-function Personal() { return <ModuloVacio titulo="Personal" descripcion="Administra la información del equipo y sus roles." />; }
+function Configuracion() { return <ModuloOperativo tipo="configuracion" />; }
+function Reportes() { return <ModuloOperativo tipo="reportes" />; }
+function Inventario() { return <ModuloOperativo tipo="inventario" />; }
+function Produccion() { return <ModuloOperativo tipo="produccion" />; }
+function Trazabilidad() { return <ModuloOperativo tipo="trazabilidad" />; }
+function Ambiental() { return <ModuloOperativo tipo="ambiental" />; }
+function Calidad() { return <ModuloOperativo tipo="calidad" />; }
+function Costos() { return <ModuloOperativo tipo="costos" />; }
+function Personal() { return <ModuloOperativo tipo="personal" />; }
 
 export default function Rutas() {
   return (
