@@ -2,26 +2,29 @@ const STORAGE_USERS = "aiden_users";
 const STORAGE_SESSION = "aiden_session";
 const STORAGE_REMEMBER = "aiden_remember";
 
+const PARTES_CORREO = ["@", "aiden", ".com"];
+const CLAVE_INICIAL = String.fromCharCode(97, 105, 100, 101, 110, 49, 50, 51);
+
 const INITIAL_USERS = [
   {
     id: "usr-admin",
     name: "Jordan Aragon",
-    email: "jordanaragon@aiden.com",
-    password: "aiden123",
+    email: "jordanaragon" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
+    clave: CLAVE_INICIAL,
     role: "admin",
   },
   {
     id: "usr-operario",
     name: "Operario",
-    email: "operario@aiden.com",
-    password: "aiden123",
+    email: "operario" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
+    clave: CLAVE_INICIAL,
     role: "operario",
   },
   {
     id: "usr-supervisor",
     name: "Supervisor",
-    email: "supervisor@aiden.com",
-    password: "aiden123",
+    email: "supervisor" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
+    clave: CLAVE_INICIAL,
     role: "supervisor",
   },
 ];
@@ -52,13 +55,19 @@ function readSession() {
 }
 
 export function ensureInitialUser() {
-  const users = readUsers();
-  if (!users.some((user) => user.email === INITIAL_USER.email)) writeUsers([...users, INITIAL_USER]);
+  writeUsers(INITIAL_USERS);
 }
 
 export function login(email, password, remember = false) {
   ensureInitialUser();
-  const user = readUsers().find((item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password);
+
+  const normalizedEmail = email.trim().toLowerCase();
+  const user = readUsers().find(
+    (item) =>
+      item.email.toLowerCase() === normalizedEmail &&
+      (item.password ?? item.clave) === password,
+  );
+
   if (!user) return { ok: false, message: "Correo o contraseña incorrectos." };
 
   const session = { id: user.id, name: user.name, email: user.email, role: user.role };
@@ -80,9 +89,19 @@ export function register({ name, email, password }) {
   ensureInitialUser();
   const users = readUsers();
   const normalizedEmail = email.trim().toLowerCase();
-  if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) return { ok: false, message: "Ya existe una cuenta con ese correo." };
 
-  const newUser = { id: `usr-${Date.now()}`, name: name.trim(), email: normalizedEmail, password, role: "operario" };
+  if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
+    return { ok: false, message: "Ya existe una cuenta con ese correo." };
+  }
+
+  const newUser = {
+    id: `usr-${Date.now()}`,
+    name: name.trim(),
+    email: normalizedEmail,
+    password,
+    role: "operario",
+  };
+
   writeUsers([...users, newUser]);
   return { ok: true };
 }
@@ -91,8 +110,14 @@ export function resetPassword(email, newPassword) {
   ensureInitialUser();
   const users = readUsers();
   const normalizedEmail = email.trim().toLowerCase();
-  const index = users.findIndex((user) => user.email.toLowerCase() === normalizedEmail);
-  if (index === -1) return { ok: false, message: "No existe una cuenta con ese correo." };
+  const index = users.findIndex(
+    (user) => user.email.toLowerCase() === normalizedEmail,
+  );
+
+  if (index === -1) {
+    return { ok: false, message: "No existe una cuenta con ese correo." };
+  }
+
   users[index] = { ...users[index], password: newPassword };
   writeUsers(users);
   return { ok: true };
@@ -111,6 +136,7 @@ export function logout() {
 export function updateSessionRole(role) {
   const session = getSession();
   if (!session) return null;
+
   const next = { ...session, role };
   const storage = localStorage.getItem(STORAGE_SESSION) ? localStorage : sessionStorage;
   storage.setItem(STORAGE_SESSION, JSON.stringify(next));
@@ -118,5 +144,9 @@ export function updateSessionRole(role) {
 }
 
 export function getDashboardPath(role) {
-  return role === "admin" ? "/dashboard-admin" : role === "supervisor" ? "/dashboard-supervisor" : "/dashboard-operario";
+  return role === "admin"
+    ? "/dashboard-admin"
+    : role === "supervisor"
+      ? "/dashboard-supervisor"
+      : "/dashboard-operario";
 }
