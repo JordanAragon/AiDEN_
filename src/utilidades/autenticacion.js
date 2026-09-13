@@ -2,13 +2,29 @@ const STORAGE_USERS = "aiden_users";
 const STORAGE_SESSION = "aiden_session";
 const STORAGE_REMEMBER = "aiden_remember";
 
-const INITIAL_USER = {
-  id: "usr-admin-inicial",
-  name: "Jordan Aragon",
-  email: "admin@aiden.local",
-  password: "Aiden123!",
-  role: "admin",
-};
+const INITIAL_USERS = [
+  {
+    id: "usr-admin",
+    name: "Jordan Aragon",
+    email: "jordanaragon@aiden.com",
+    password: "aiden123",
+    role: "admin",
+  },
+  {
+    id: "usr-operario",
+    name: "Operario",
+    email: "operario@aiden.com",
+    password: "aiden123",
+    role: "operario",
+  },
+  {
+    id: "usr-supervisor",
+    name: "Supervisor",
+    email: "supervisor@aiden.com",
+    password: "aiden123",
+    role: "supervisor",
+  },
+];
 
 function readUsers() {
   try {
