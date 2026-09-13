@@ -1,5 +1,6 @@
 const STORAGE_USERS = "aiden_users";
 const STORAGE_SESSION = "aiden_session";
+const STORAGE_REMEMBER = "aiden_remember";
 
 const INITIAL_USER = {
   id: "usr-admin-inicial",
@@ -23,35 +24,37 @@ function writeUsers(users) {
   localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
 }
 
+function readSession() {
+  try {
+    const persistent = localStorage.getItem(STORAGE_SESSION);
+    if (persistent) return JSON.parse(persistent);
+    const temporary = sessionStorage.getItem(STORAGE_SESSION);
+    return temporary ? JSON.parse(temporary) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function ensureInitialUser() {
   const users = readUsers();
-  if (!users.some((user) => user.email === INITIAL_USER.email)) {
-    writeUsers([...users, INITIAL_USER]);
-  }
+  if (!users.some((user) => user.email === INITIAL_USER.email)) writeUsers([...users, INITIAL_USER]);
 }
 
 export function login(email, password, remember = false) {
   ensureInitialUser();
-  const user = readUsers().find(
-    (item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password,
-  );
+  const user = readUsers().find((item) => item.email.toLowerCase() === email.trim().toLowerCase() && item.password === password);
+  if (!user) return { ok: false, message: "Correo o contraseña incorrectos." };
 
-  if (!user) {
-    return { ok: false, message: "Correo o contraseña incorrectos." };
-  }
+  const session = { id: user.id, name: user.name, email: user.email, role: user.role };
+  localStorage.removeItem(STORAGE_SESSION);
+  sessionStorage.removeItem(STORAGE_SESSION);
 
-  const session = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-  };
-
-  localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
   if (remember) {
-    localStorage.setItem("aiden_remember", "true");
+    localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+    localStorage.setItem(STORAGE_REMEMBER, "true");
   } else {
-    localStorage.removeItem("aiden_remember");
+    sessionStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+    localStorage.removeItem(STORAGE_REMEMBER);
   }
 
   return { ok: true, user: session };
@@ -61,19 +64,9 @@ export function register({ name, email, password }) {
   ensureInitialUser();
   const users = readUsers();
   const normalizedEmail = email.trim().toLowerCase();
+  if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) return { ok: false, message: "Ya existe una cuenta con ese correo." };
 
-  if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
-    return { ok: false, message: "Ya existe una cuenta con ese correo." };
-  }
-
-  const newUser = {
-    id: `usr-${Date.now()}`,
-    name: name.trim(),
-    email: normalizedEmail,
-    password,
-    role: "operario",
-  };
-
+  const newUser = { id: `usr-${Date.now()}`, name: name.trim(), email: normalizedEmail, password, role: "operario" };
   writeUsers([...users, newUser]);
   return { ok: true };
 }
@@ -83,42 +76,31 @@ export function resetPassword(email, newPassword) {
   const users = readUsers();
   const normalizedEmail = email.trim().toLowerCase();
   const index = users.findIndex((user) => user.email.toLowerCase() === normalizedEmail);
-
-  if (index === -1) {
-    return { ok: false, message: "No existe una cuenta con ese correo." };
-  }
-
+  if (index === -1) return { ok: false, message: "No existe una cuenta con ese correo." };
   users[index] = { ...users[index], password: newPassword };
   writeUsers(users);
   return { ok: true };
 }
 
 export function getSession() {
-  try {
-    const session = localStorage.getItem(STORAGE_SESSION);
-    return session ? JSON.parse(session) : null;
-  } catch {
-    return null;
-  }
+  return readSession();
 }
 
 export function logout() {
   localStorage.removeItem(STORAGE_SESSION);
-  localStorage.removeItem("aiden_remember");
+  localStorage.removeItem(STORAGE_REMEMBER);
+  sessionStorage.removeItem(STORAGE_SESSION);
 }
 
 export function updateSessionRole(role) {
   const session = getSession();
   if (!session) return null;
   const next = { ...session, role };
-  localStorage.setItem(STORAGE_SESSION, JSON.stringify(next));
+  const storage = localStorage.getItem(STORAGE_SESSION) ? localStorage : sessionStorage;
+  storage.setItem(STORAGE_SESSION, JSON.stringify(next));
   return next;
 }
 
 export function getDashboardPath(role) {
-  return role === "admin"
-    ? "/dashboard-admin"
-    : role === "supervisor"
-      ? "/dashboard-supervisor"
-      : "/dashboard-operario";
+  return role === "admin" ? "/dashboard-admin" : role === "supervisor" ? "/dashboard-supervisor" : "/dashboard-operario";
 }
