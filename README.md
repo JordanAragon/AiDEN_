@@ -1,19 +1,56 @@
-# React + Vite
+# AiDEN
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+AiDEN es una plataforma web para organizar y centralizar la gestión operativa de viveros agrícolas.
 
-Currently, two official plugins are available:
+El proyecto está construido actualmente como frontend con React, Vite y Tailwind CSS. La aplicación incluye navegación por módulos, diferentes perfiles de usuario, paneles operativos y una primera interfaz de inteligencia artificial preparada para una futura integración con servicios de datos y modelos.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Funcionalidades actuales
 
-## React Compiler
+- Inicio de sesión, registro y recuperación de contraseña con almacenamiento local para la etapa de desarrollo frontend.
+- Control de acceso por rol dentro de la aplicación.
+- Paneles diferenciados para Administrador, Supervisor y Operario.
+- Módulos de Inventario, Producción, Trazabilidad, Ambiental, Calidad, Costos, Personal, Reportes y Configuración.
+- Módulo de Inteligencia Artificial con interacción provisional en el cliente.
+- Búsqueda de módulos y gestión local de notificaciones.
 
-The React Compiler is enabled on this template. See [this documentation](https://react.dev/learn/react-compiler) for more information.
+## Tecnologías
 
-Note: This will impact Vite dev & build performances.
-You can also try [the experimental native React Compiler support in plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md#rust-react-compiler) by using `compiler: true` in the plugin options instead of using the Babel plugin.
+- React
+- Vite
+- Tailwind CSS
+- React Router
+- Recharts
+- Lucide React
 
-## Expanding the ESLint configuration
+## Estructura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```text
+src/
+├── components/       # Componentes reutilizables y partes dinámicas de la interfaz
+├── datos/             # Datos de apoyo del frontend
+├── hooks/             # Hooks reutilizables
+├── pages/             # Páginas asociadas a rutas
+├── plantillas/        # Estructuras generales de las páginas autenticadas
+├── routes/            # Configuración de navegación y rutas protegidas
+├── utilidades/        # Funciones auxiliares, incluida la sesión local
+└── assets/            # Imágenes y recursos estáticos
+```
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev
+```
+
+Para generar una compilación de producción:
+
+```bash
+npm run build
+```
+
+## Estado del proyecto
+
+La rama `Jordan` corresponde a la etapa actual de desarrollo frontend. La persistencia remota, autenticación real, base de datos, APIs y servicios de inteligencia todavía no están configurados.
+
+La autenticación local que existe en esta etapa es únicamente para permitir que los flujos del frontend puedan probarse sin backend.
