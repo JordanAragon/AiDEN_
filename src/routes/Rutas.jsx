@@ -12,15 +12,15 @@ import InformacionLegal from "../pages/InformacionLegal";
 import RutaProtegida from "../components/autenticacion/RutaProtegida";
 import ModuloOperativo from "../components/modulos/ModuloOperativo";
 
-function Configuracion() { return <ModuloOperativo tipo="configuracion" />; }
-function Reportes() { return <ModuloOperativo tipo="reportes" />; }
-function Inventario() { return <ModuloOperativo tipo="inventario" />; }
-function Produccion() { return <ModuloOperativo tipo="produccion" />; }
-function Trazabilidad() { return <ModuloOperativo tipo="trazabilidad" />; }
-function Ambiental() { return <ModuloOperativo tipo="ambiental" />; }
-function Calidad() { return <ModuloOperativo tipo="calidad" />; }
-function Costos() { return <ModuloOperativo tipo="costos" />; }
-function Personal() { return <ModuloOperativo tipo="personal" />; }
+function Configuracion() { return <ModuloOperativo key="configuracion" tipo="configuracion" />; }
+function Reportes() { return <ModuloOperativo key="reportes" tipo="reportes" />; }
+function Inventario() { return <ModuloOperativo key="inventario" tipo="inventario" />; }
+function Produccion() { return <ModuloOperativo key="produccion" tipo="produccion" />; }
+function Trazabilidad() { return <ModuloOperativo key="trazabilidad" tipo="trazabilidad" />; }
+function Ambiental() { return <ModuloOperativo key="ambiental" tipo="ambiental" />; }
+function Calidad() { return <ModuloOperativo key="calidad" tipo="calidad" />; }
+function Costos() { return <ModuloOperativo key="costos" tipo="costos" />; }
+function Personal() { return <ModuloOperativo key="personal" tipo="personal" />; }
 
 export default function Rutas() {
   return (
