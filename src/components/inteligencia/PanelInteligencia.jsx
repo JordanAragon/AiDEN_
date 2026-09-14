@@ -35,13 +35,13 @@ function analizar(consulta, datos) {
     const mayor = [...lotes].sort((a, b) => b.porPlanta - a.porPlanta)[0];
     return { texto: `El mayor costo por planta registrado corresponde a ${mayor.lote}, con ${new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(mayor.porPlanta)} por planta.`, links: [{ label: mayor.lote, ruta: "/costos" }] };
   }
-  const atencion = datos.calidad.filter(r => r.estadoManual !== "Cerrada" || r.prioridad === "Alta");
+  const atencion = datos.calidad.filter(r => r.estadoManual !== "Cerrada" && r.prioridad === "Alta");
   if (q.includes("lote") || q.includes("atención") || q.includes("atencion") || q.includes("hoy")) {
     const riesgo = datos.produccion.filter(r => r.etapa === "Adaptación");
     const mensaje = [];
     if (atencion.length) mensaje.push(`${atencion.length} incidencia${atencion.length > 1 ? "s" : ""} de calidad pendiente${atencion.length > 1 ? "s" : ""}`);
     if (riesgo.length) mensaje.push(`${riesgo.length} lote${riesgo.length > 1 ? "s" : ""} en adaptación`);
-    return { texto: mensaje.length ? `Hoy conviene priorizar ${mensaje.join(" y ")}.` : "No hay alertas operativas críticas con los datos registrados.", links: atencion.slice(0, 2).map(r => ({ label: r.lote || r.codigo, ruta: "/calidad" })) };
+    return { texto: mensaje.length ? `Hoy conviene priorizar ${mensaje.join(" y ")}.` : "No hay alertas operativas críticas con los datos registrados.", links: [...atencion.slice(0, 2).map(r => ({ label: r.lote || r.codigo, ruta: "/calidad" })), ...riesgo.slice(0, 2).map(r => ({ label: r.lote, ruta: "/produccion" }))] };
   }
   return { texto: "Puedo consultar inventario, producción, calidad, costos y condiciones ambientales usando los datos guardados en AiDEN.", links: [] };
 }
