@@ -10,17 +10,18 @@ import ForgotPassword from "../pages/ForgotPassword";
 import InteligenciaArtificial from "../pages/InteligenciaArtificial";
 import InformacionLegal from "../pages/InformacionLegal";
 import RutaProtegida from "../components/autenticacion/RutaProtegida";
-import ModuloOperativo from "../components/modulos/ModuloOperativo";
+import CentroOperativo from "../components/modulos/CentroOperativo";
 
-function Configuracion() { return <ModuloOperativo key="configuracion" tipo="configuracion" />; }
-function Reportes() { return <ModuloOperativo key="reportes" tipo="reportes" />; }
-function Inventario() { return <ModuloOperativo key="inventario" tipo="inventario" />; }
-function Produccion() { return <ModuloOperativo key="produccion" tipo="produccion" />; }
-function Trazabilidad() { return <ModuloOperativo key="trazabilidad" tipo="trazabilidad" />; }
-function Ambiental() { return <ModuloOperativo key="ambiental" tipo="ambiental" />; }
-function Calidad() { return <ModuloOperativo key="calidad" tipo="calidad" />; }
-function Costos() { return <ModuloOperativo key="costos" tipo="costos" />; }
-function Personal() { return <ModuloOperativo key="personal" tipo="personal" />; }
+function Modulo({ tipo }) { return <CentroOperativo key={tipo} tipo={tipo} />; }
+function Configuracion() { return <Modulo tipo="configuracion" />; }
+function Reportes() { return <Modulo tipo="reportes" />; }
+function Inventario() { return <Modulo tipo="inventario" />; }
+function Produccion() { return <Modulo tipo="produccion" />; }
+function Trazabilidad() { return <Modulo tipo="trazabilidad" />; }
+function Ambiental() { return <Modulo tipo="ambiental" />; }
+function Calidad() { return <Modulo tipo="calidad" />; }
+function Costos() { return <Modulo tipo="costos" />; }
+function Personal() { return <Modulo tipo="personal" />; }
 
 export default function Rutas() {
   return (
