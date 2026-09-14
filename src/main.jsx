@@ -4,6 +4,9 @@ import './index.css'
 import './estilos/modo-oscuro.css'
 import App from './App.jsx'
 
+const temaGuardado = localStorage.getItem('aiden-theme')
+document.documentElement.classList.toggle('aiden-dark', temaGuardado === 'dark')
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <App />
