@@ -1,7 +1,6 @@
 import {
   ArrowDownRight,
   ArrowRight,
-  BrainCircuit,
   CircleDollarSign,
   FileText,
   GitBranch,
