@@ -1,65 +1,95 @@
-import { useMemo, useState } from "react";
-import { BrainCircuit, Lightbulb, Send, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, BrainCircuit, Check, Lightbulb, MessageCircle, Sparkles, ThumbsDown, ThumbsUp } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-const recomendaciones = [
-  "Revisar el lote LT-2024-089 por la incidencia de calidad registrada.",
-  "Verificar el inventario de Sustrato Premium antes del siguiente turno.",
-  "Comparar producción y cosecha de los últimos seis meses para detectar cambios.",
+const clave = tipo => `aiden-${tipo}`;
+const leer = (tipo, fallback = []) => { try { const value = localStorage.getItem(clave(tipo)); return value ? JSON.parse(value) : fallback; } catch { return fallback; } };
+
+const sugerencias = [
+  { label: "Lotes que necesitan atención", query: "¿Qué lotes necesitan atención hoy?" },
+  { label: "Revisar inventario", query: "¿Qué insumos están por debajo del mínimo?" },
+  { label: "Comparar costos", query: "¿Cuál es el costo por planta de cada lote?" },
+  { label: "Estado ambiental", query: "¿Qué zonas están fuera de rango?" },
 ];
 
+function analizar(consulta, datos) {
+  const q = consulta.toLowerCase();
+  if (q.includes("inventario") || q.includes("insumo") || q.includes("stock")) {
+    const bajos = datos.inventario.filter(r => Number(r.stock) <= Number(r.minimo));
+    return bajos.length
+      ? { texto: `Hay ${bajos.length} insumo${bajos.length > 1 ? "s" : ""} por debajo del mínimo: ${bajos.map(r => r.nombre).join(", ")}.`, links: bajos.map(r => ({ label: r.nombre, ruta: "/inventario" })) }
+      : { texto: "No hay insumos por debajo del stock mínimo registrado.", links: [] };
+  }
+  if (q.includes("ambiental") || q.includes("temperatura") || q.includes("humedad") || q.includes("zona")) {
+    const alertas = datos.ambiental.filter(r => Number(r.temperatura) > 27 || Number(r.humedad) < 55);
+    return alertas.length
+      ? { texto: `${alertas.length} zona${alertas.length > 1 ? "s requieren" : " requiere"} atención ambiental: ${alertas.map(r => `${r.zona} (${r.temperatura} °C)`).join(", ")}.`, links: alertas.map(r => ({ label: r.zona, ruta: "/ambiental" })) }
+      : { texto: "Las zonas registradas están dentro de los rangos definidos.", links: [] };
+  }
+  if (q.includes("costo") || q.includes("planta")) {
+    const lotes = datos.produccion.map(lote => {
+      const costo = datos.costos.filter(c => c.lote === lote.lote).reduce((sum, c) => sum + Number(c.valor || 0), 0);
+      return { ...lote, costo, porPlanta: lote.cantidad ? costo / Number(lote.cantidad) : 0 };
+    }).filter(r => r.costo > 0);
+    if (!lotes.length) return { texto: "Todavía no hay costos asociados a los lotes registrados.", links: [] };
+    const mayor = [...lotes].sort((a, b) => b.porPlanta - a.porPlanta)[0];
+    return { texto: `El mayor costo por planta registrado corresponde a ${mayor.lote}, con ${new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(mayor.porPlanta)} por planta.`, links: [{ label: mayor.lote, ruta: "/costos" }] };
+  }
+  const atencion = datos.calidad.filter(r => r.estadoManual !== "Cerrada" || r.prioridad === "Alta");
+  if (q.includes("lote") || q.includes("atención") || q.includes("atencion") || q.includes("hoy")) {
+    const riesgo = datos.produccion.filter(r => r.etapa === "Adaptación");
+    const mensaje = [];
+    if (atencion.length) mensaje.push(`${atencion.length} incidencia${atencion.length > 1 ? "s" : ""} de calidad pendiente${atencion.length > 1 ? "s" : ""}`);
+    if (riesgo.length) mensaje.push(`${riesgo.length} lote${riesgo.length > 1 ? "s" : ""} en adaptación`);
+    return { texto: mensaje.length ? `Hoy conviene priorizar ${mensaje.join(" y ")}.` : "No hay alertas operativas críticas con los datos registrados.", links: atencion.slice(0, 2).map(r => ({ label: r.lote || r.codigo, ruta: "/calidad" })) };
+  }
+  return { texto: "Puedo consultar inventario, producción, calidad, costos y condiciones ambientales usando los datos guardados en AiDEN.", links: [] };
+}
+
 export default function PanelInteligencia() {
+  const navigate = useNavigate();
   const [consulta, setConsulta] = useState("");
-  const [respuesta, setRespuesta] = useState("");
+  const [respuesta, setRespuesta] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [datos, setDatos] = useState(() => ({ inventario: leer("inventario"), produccion: leer("produccion"), ambiental: leer("ambiental"), calidad: leer("calidad"), costos: leer("costos") }));
 
-  const resumen = useMemo(
-    () => "El módulo analiza la información disponible en la aplicación y presenta recomendaciones para apoyar la toma de decisiones.",
-    [],
-  );
+  const refrescar = () => setDatos({ inventario: leer("inventario"), produccion: leer("produccion"), ambiental: leer("ambiental"), calidad: leer("calidad"), costos: leer("costos") });
+  useEffect(() => { window.addEventListener("aiden-data-change", refrescar); window.addEventListener("storage", refrescar); return () => { window.removeEventListener("aiden-data-change", refrescar); window.removeEventListener("storage", refrescar); }; }, []);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    if (!consulta.trim()) return;
-    setRespuesta(`Consulta recibida: ${consulta.trim()}. El análisis se conectará al servicio de inteligencia cuando la capa de datos esté disponible.`);
+  const recomendaciones = useMemo(() => {
+    const items = [];
+    datos.inventario.filter(r => Number(r.stock) <= Number(r.minimo)).forEach(r => items.push({ text: `Stock bajo: ${r.nombre}`, ruta: "/inventario", icon: "inventory" }));
+    datos.calidad.filter(r => r.estadoManual !== "Cerrada" && r.prioridad === "Alta").forEach(r => items.push({ text: `Incidencia alta: ${r.lote || r.codigo}`, ruta: "/calidad", icon: "quality" }));
+    datos.ambiental.filter(r => Number(r.temperatura) > 27 || Number(r.humedad) < 55).forEach(r => items.push({ text: `Revisar condiciones: ${r.zona}`, ruta: "/ambiental", icon: "environment" }));
+    if (!items.length) items.push({ text: "No hay alertas prioritarias con los datos actuales.", ruta: "/dashboard-admin", icon: "ok" });
+    return items.slice(0, 5);
+  }, [datos]);
+
+  const consultar = (event, value = consulta) => {
+    event?.preventDefault();
+    if (!value.trim()) return;
+    setRespuesta(analizar(value.trim(), datos));
+    setFeedback(null);
     setConsulta("");
   };
 
   return (
-    <section className="grid gap-6 lg:grid-cols-3">
-      <article className="lg:col-span-2 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <header className="flex items-start gap-3">
-          <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
-            <BrainCircuit size={20} />
-          </span>
-          <section>
-            <h2 className="font-semibold text-slate-900">Asistente inteligente</h2>
-            <p className="mt-1 text-sm text-slate-500">Consulta información y recibe apoyo para interpretar la operación.</p>
-          </section>
+    <section className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <article className="min-h-[620px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <header className="flex items-start justify-between border-b border-slate-100 p-5">
+          <section className="flex items-start gap-3"><span className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><BrainCircuit size={20}/></span><section><p className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-700">Inteligencia</p><h1 className="mt-1 text-xl font-bold text-slate-950">Asistente de AiDEN</h1><p className="mt-1 text-sm text-slate-500">Consulta la operación usando los datos reales guardados en el sistema.</p></section></section>
+          <span className="hidden items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-700 sm:flex"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500"/>Datos locales</span>
         </header>
 
-        <form onSubmit={handleSubmit} className="mt-6 flex gap-2">
-          <input value={consulta} onChange={(event) => setConsulta(event.target.value)} className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600" placeholder="Ej. ¿Qué debería revisar hoy?" aria-label="Consulta al asistente" />
-          <button type="submit" className="flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-800"><Send size={15} />Consultar</button>
-        </form>
-
-        <article className="mt-5 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
-          {respuesta || resumen}
-        </article>
-      </article>
-
-      <article className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <header className="flex items-center gap-2">
-          <Sparkles size={17} className="text-emerald-700" />
-          <h2 className="font-semibold text-slate-900">Recomendaciones</h2>
-        </header>
-        <section className="mt-4 space-y-3">
-          {recomendaciones.map((item) => (
-            <article key={item} className="flex gap-3 rounded-lg border border-slate-100 p-3">
-              <Lightbulb size={15} className="mt-0.5 shrink-0 text-emerald-600" />
-              <p className="text-sm leading-5 text-slate-600">{item}</p>
-            </article>
-          ))}
+        <section className="space-y-5 p-5">
+          <section><p className="mb-2 text-xs font-semibold text-slate-500">Sugerencias</p><nav className="flex flex-wrap gap-2" aria-label="Consultas sugeridas">{sugerencias.map(item => <button key={item.query} type="button" onClick={() => consultar(null, item.query)} className="rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700">{item.label}</button>)}</nav></section>
+          <article className="rounded-2xl bg-slate-50 p-5"><section className="flex gap-3"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white text-emerald-700 shadow-sm"><Sparkles size={15}/></span><section className="min-w-0"><p className="text-sm font-semibold text-slate-800">{respuesta ? "Análisis" : "Resumen operativo"}</p><p className="mt-1 text-sm leading-6 text-slate-600">{respuesta?.texto || "Puedo detectar alertas y resumir la operación sin inventar datos: leo los registros que AiDEN tiene disponibles en este navegador."}</p>{respuesta?.links?.length > 0 && <nav className="mt-3 flex flex-wrap gap-2">{respuesta.links.map(link => <button key={`${link.ruta}-${link.label}`} type="button" onClick={() => navigate(link.ruta)} className="inline-flex items-center gap-1 rounded-lg bg-white px-2.5 py-1.5 text-xs font-semibold text-emerald-700 shadow-sm hover:bg-emerald-50">{link.label}<ArrowRight size={12}/></button>)}</nav>}</section></section></article>
+          {respuesta && <footer className="flex items-center gap-2 border-t border-slate-100 pt-4"><span className="text-xs text-slate-400">¿Fue útil este análisis?</span><button type="button" onClick={() => setFeedback("up")} className={`rounded-lg p-2 ${feedback === "up" ? "bg-emerald-50 text-emerald-700" : "text-slate-400 hover:bg-slate-100"}`} aria-label="Respuesta útil"><ThumbsUp size={14}/></button><button type="button" onClick={() => setFeedback("down")} className={`rounded-lg p-2 ${feedback === "down" ? "bg-red-50 text-red-600" : "text-slate-400 hover:bg-slate-100"}`} aria-label="Respuesta no útil"><ThumbsDown size={14}/></button>{feedback && <span className="inline-flex items-center gap-1 text-xs text-slate-400"><Check size={13}/>Registrado</span>}</footer>}
+          <form onSubmit={consultar} className="flex gap-2 rounded-2xl border border-slate-200 bg-white p-2 shadow-sm"><MessageCircle size={18} className="ml-2 mt-2.5 text-slate-400"/><input value={consulta} onChange={e => setConsulta(e.target.value)} className="min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-slate-800 outline-none" placeholder="Pregúntale algo sobre la operación..." aria-label="Consulta al asistente"/><button type="submit" className="rounded-xl bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-800">Consultar</button></form>
         </section>
       </article>
+
+      <aside className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><header className="flex items-center justify-between"><section className="flex items-center gap-2"><Lightbulb size={17} className="text-emerald-700"/><h2 className="font-semibold text-slate-900">Recomendaciones</h2></section><span className="text-[11px] font-medium text-slate-400">En vivo</span></header><section className="mt-4 space-y-2">{recomendaciones.map((item, index) => <button key={`${item.text}-${index}`} type="button" onClick={() => navigate(item.ruta)} className="group flex w-full items-start gap-3 rounded-xl border border-slate-100 p-3 text-left transition hover:border-emerald-100 hover:bg-emerald-50/40"><span className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${item.icon === "ok" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"}`}><Lightbulb size={13}/></span><span className="min-w-0 flex-1"><span className="block text-sm font-medium leading-5 text-slate-700">{item.text}</span><span className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-700 opacity-0 transition group-hover:opacity-100">Ver registro <ArrowRight size={11}/></span></span></button>)}</section></aside>
     </section>
   );
 }
