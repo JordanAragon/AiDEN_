@@ -1,59 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Package, Sprout, GitBranch, Thermometer, ShieldCheck, CircleDollarSign, Users, BarChart3, Settings, ChevronLeft, ChevronRight, Leaf, BrainCircuit } from "lucide-react";
+import { BarChart3, BrainCircuit, ChevronLeft, ChevronRight, CircleDollarSign, GitBranch, LayoutDashboard, Leaf, Moon, Package, Settings, ShieldCheck, Sprout, Sun, Thermometer, Users } from "lucide-react";
 import { getDashboardPath, getSession } from "../../utilidades/autenticacion";
 
-const navItems = [
-  { label: "Dashboard", path: "/dashboard-admin", icon: <LayoutDashboard size={18} /> },
-  { label: "Inventario", path: "/inventario", icon: <Package size={18} /> },
-  { label: "Producción", path: "/produccion", icon: <Sprout size={18} /> },
-  { label: "Trazabilidad", path: "/trazabilidad", icon: <GitBranch size={18} /> },
-  { label: "Ambiental", path: "/ambiental", icon: <Thermometer size={18} /> },
-  { label: "Calidad", path: "/calidad", icon: <ShieldCheck size={18} /> },
-  { label: "Costos", path: "/costos", icon: <CircleDollarSign size={18} /> },
-  { label: "Personal", path: "/personal", icon: <Users size={18} /> },
-  { label: "Inteligencia", path: "/ia", icon: <BrainCircuit size={18} /> },
-  { label: "Reportes", path: "/reportes", icon: <BarChart3 size={18} /> },
-  { label: "Configuración", path: "/configuracion", icon: <Settings size={18} /> },
-];
+const navItems=[{label:"Dashboard",path:"/dashboard-admin",icon:<LayoutDashboard size={18}/>},{label:"Inventario",path:"/inventario",icon:<Package size={18}/>},{label:"Producción",path:"/produccion",icon:<Sprout size={18}/>},{label:"Trazabilidad",path:"/trazabilidad",icon:<GitBranch size={18}/>},{label:"Ambiental",path:"/ambiental",icon:<Thermometer size={18}/>},{label:"Calidad",path:"/calidad",icon:<ShieldCheck size={18}/>},{label:"Costos",path:"/costos",icon:<CircleDollarSign size={18}/>},{label:"Personal",path:"/personal",icon:<Users size={18}/>},{label:"Inteligencia",path:"/ia",icon:<BrainCircuit size={18}/>},{label:"Reportes",path:"/reportes",icon:<BarChart3 size={18}/>},{label:"Configuración",path:"/configuracion",icon:<Settings size={18}/> }];
 
-export default function BarraLateral() {
-  const [colapsado, setColapsado] = useState(false);
-  const location = useLocation();
-  const session = getSession();
-  const pathDashboard = getDashboardPath(session?.role);
-
-  return (
-    <aside className={`flex flex-col bg-white border-r border-[#E5EDE8] h-full relative transition-all duration-200 ease-in-out shrink-0 ${colapsado ? "w-16" : "w-60"}`}>
-      <header className="flex items-center px-4 h-16 min-h-[64px] border-b border-[#E5EDE8]">
-        {!colapsado ? (
-          <section className="flex items-center gap-2"><span className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white"><Leaf size={16} /></span><span className="font-bold text-emerald-700 text-lg tracking-tight font-sans">AiDEN</span></section>
-        ) : (
-          <span className="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center text-white mx-auto"><Leaf size={16} /></span>
-        )}
-      </header>
-
-      <nav aria-label="Menú principal" className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <ul className="space-y-1">
-          {navItems.map((item) => {
-            const esDashboard = item.label === "Dashboard";
-            const targetPath = esDashboard ? pathDashboard : item.path;
-            const isActive = esDashboard ? location.pathname === pathDashboard : location.pathname === item.path;
-            return (
-              <li key={item.label}>
-                <NavLink to={targetPath} title={colapsado ? item.label : undefined} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${colapsado ? "justify-center" : "justify-start"} ${isActive ? "bg-emerald-50 text-emerald-700 font-medium" : "text-slate-600 hover:bg-slate-50"}`}>
-                  <span className="shrink-0">{item.icon}</span>
-                  {!colapsado && <span>{item.label}</span>}
-                </NavLink>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      <button type="button" onClick={() => setColapsado(!colapsado)} className="absolute -right-3 top-20 w-6 h-6 bg-white border border-[#E5EDE8] rounded-full flex items-center justify-center shadow-sm hover:bg-slate-50 transition-colors z-10" aria-label={colapsado ? "Expandir barra lateral" : "Colapsar barra lateral"}>
-        {colapsado ? <ChevronRight size={12} className="text-slate-500" /> : <ChevronLeft size={12} className="text-slate-500" />}
-      </button>
-    </aside>
-  );
+export default function BarraLateral(){
+ const [colapsado,setColapsado]=useState(false); const [oscuro,setOscuro]=useState(()=>localStorage.getItem("aiden-theme")==="dark"); const location=useLocation(); const session=getSession(); const pathDashboard=getDashboardPath(session?.role);
+ useEffect(()=>{document.documentElement.classList.toggle("aiden-dark",oscuro);localStorage.setItem("aiden-theme",oscuro?"dark":"light")},[oscuro]);
+ return <aside className={`flex h-full shrink-0 flex-col border-r border-[#E5EDE8] bg-white relative transition-all duration-200 ease-in-out ${colapsado?"w-16":"w-60"}`}><header className="flex h-16 min-h-[64px] items-center border-b border-[#E5EDE8] px-4">{!colapsado?<section className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white"><Leaf size={16}/></span><span className="font-sans text-lg font-bold tracking-tight text-emerald-700">AiDEN</span></section>:<span className="mx-auto flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 text-white"><Leaf size={16}/></span>}</header><nav aria-label="Menú principal" className="flex-1 overflow-y-auto px-3 py-4"><ul className="space-y-1">{navItems.map(item=>{const esDashboard=item.label==="Dashboard";const targetPath=esDashboard?pathDashboard:item.path;const isActive=esDashboard?location.pathname===pathDashboard:location.pathname===item.path;return <li key={item.label}><NavLink to={targetPath} title={colapsado?item.label:undefined} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${colapsado?"justify-center":"justify-start"} ${isActive?"bg-emerald-50 font-medium text-emerald-700":"text-slate-600 hover:bg-slate-50"}`}>{item.icon}{!colapsado&&<span>{item.label}</span>}</NavLink></li>})}</ul></nav><footer className="border-t border-slate-100 p-3"><button type="button" onClick={()=>setOscuro(v=>!v)} title={colapsado?(oscuro?"Modo claro":"Modo oscuro"):undefined} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-500 hover:bg-slate-50 ${colapsado?"justify-center":""}`} aria-label={oscuro?"Activar modo claro":"Activar modo oscuro"}>{oscuro?<Sun size={18}/>:<Moon size={18}/>} {!colapsado&&<span>{oscuro?"Modo claro":"Modo oscuro"}</span>}</button></footer><button type="button" onClick={()=>setColapsado(v=>!v)} className="absolute -right-3 top-20 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-[#E5EDE8] bg-white shadow-sm hover:bg-slate-50" aria-label={colapsado?"Expandir barra lateral":"Colapsar barra lateral"}>{colapsado?<ChevronRight size={12} className="text-slate-500"/>:<ChevronLeft size={12} className="text-slate-500"/>}</button></aside>
 }
