@@ -20,25 +20,38 @@ import AmbientalOperativo from "../components/modulos/AmbientalOperativo";
 import TrazabilidadOperativo from "../components/modulos/TrazabilidadOperativo";
 import ConfiguracionOperativo from "../components/modulos/ConfiguracionOperativo";
 
-function Configuracion(){return <ConfiguracionOperativo/>} function Reportes(){return <ModuloOperativo key="reportes" tipo="reportes"/>} function Inventario(){return <InventarioOperativo/>} function Produccion(){return <ProduccionOperativo/>} function Trazabilidad(){return <TrazabilidadOperativo/>} function Ambiental(){return <AmbientalOperativo/>} function Calidad(){return <CalidadOperativo/>} function Costos(){return <CostosOperativo/>} function Personal(){return <PersonalOperativo/>}
-function Permitido({roles,children}){return <RutaProtegida roles={roles}>{children}</RutaProtegida>}
+const Permitido = ({ roles, children }) => <RutaProtegida roles={roles}>{children}</RutaProtegida>;
+const Reportes = () => <ModuloOperativo key="reportes" tipo="reportes" />;
 
-export default function Rutas(){return <BrowserRouter><Routes>
-  <Route path="/" element={<Home/>}/><Route path="/login" element={<Login/>}/><Route path="/signup" element={<Signup/>}/><Route path="/forgot-password" element={<ForgotPassword/>}/><Route path="/terminos" element={<InformacionLegal/>}/><Route path="/privacidad" element={<InformacionLegal/>}/>
-  <Route element={<RutaProtegida/>}><Route element={<PlantillaPrincipal/>}>
-    <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]}/>}><Route index element={<DashboardAdmin/>}/></Route>
-    <Route path="/dashboard-supervisor" element={<RutaProtegida roles={["admin","supervisor"]}/>}><Route index element={<DashboardSupervisor/>}/></Route>
-    <Route path="/dashboard-operario" element={<RutaProtegida roles={["admin","supervisor","operario"]}/>}><Route index element={<DashboardOperario/>}/></Route>
-    <Route path="/inventario" element={<Permitido roles={["admin","supervisor","operario"]}><Inventario/></Permitido>}/>
-    <Route path="/produccion" element={<Permitido roles={["admin","supervisor","operario"]}><Produccion/></Permitido>}/>
-    <Route path="/trazabilidad" element={<Permitido roles={["admin","supervisor","operario"]}><Trazabilidad/></Permitido>}/>
-    <Route path="/ambiental" element={<Permitido roles={["admin","supervisor","operario"]}><Ambiental/></Permitido>}/>
-    <Route path="/calidad" element={<Permitido roles={["admin","supervisor","operario"]}><Calidad/></Permitido>}/>
-    <Route path="/costos" element={<Permitido roles={["admin","supervisor"]}><Costos/></Permitido>}/>
-    <Route path="/personal" element={<Permitido roles={["admin","supervisor"]}><Personal/></Permitido>}/>
-    <Route path="/reportes" element={<Permitido roles={["admin","supervisor"]}><Reportes/></Permitido>}/>
-    <Route path="/configuracion" element={<Permitido roles={["admin"]}><Configuracion/></Permitido>}/>
-    <Route path="/ia" element={<Permitido roles={["admin","supervisor"]}><InteligenciaArtificial/></Permitido>}/>
-  </Route></Route>
-  <Route path="*" element={<Navigate to="/" replace/>}/>
-</Routes></BrowserRouter>}
+export default function Rutas() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/terminos" element={<InformacionLegal />} />
+        <Route path="/privacidad" element={<InformacionLegal />} />
+        <Route element={<RutaProtegida />}>
+          <Route element={<PlantillaPrincipal />}>
+            <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]} />}><Route index element={<DashboardAdmin />} /></Route>
+            <Route path="/dashboard-supervisor" element={<RutaProtegida roles={["admin", "supervisor"]} />}><Route index element={<DashboardSupervisor />} /></Route>
+            <Route path="/dashboard-operario" element={<RutaProtegida roles={["admin", "supervisor", "operario"]} />}><Route index element={<DashboardOperario />} /></Route>
+            <Route path="/inventario" element={<Permitido roles={["admin", "supervisor"]}><InventarioOperativo /></Permitido>} />
+            <Route path="/produccion" element={<Permitido roles={["admin", "supervisor", "operario"]}><ProduccionOperativo /></Permitido>} />
+            <Route path="/trazabilidad" element={<Permitido roles={["admin", "supervisor", "operario"]}><TrazabilidadOperativo /></Permitido>} />
+            <Route path="/ambiental" element={<Permitido roles={["admin", "supervisor", "operario"]}><AmbientalOperativo /></Permitido>} />
+            <Route path="/calidad" element={<Permitido roles={["admin", "supervisor", "operario"]}><CalidadOperativo /></Permitido>} />
+            <Route path="/costos" element={<Permitido roles={["admin", "supervisor"]}><CostosOperativo /></Permitido>} />
+            <Route path="/personal" element={<Permitido roles={["admin", "supervisor"]}><PersonalOperativo /></Permitido>} />
+            <Route path="/reportes" element={<Permitido roles={["admin", "supervisor"]}><Reportes /></Permitido>} />
+            <Route path="/configuracion" element={<Permitido roles={["admin"]}><ConfiguracionOperativo /></Permitido>} />
+            <Route path="/ia" element={<Permitido roles={["admin", "supervisor"]}><InteligenciaArtificial /></Permitido>} />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
