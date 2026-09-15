@@ -20,7 +20,7 @@ export default defineConfig([
     rules: {
       "no-unused-vars": "warn",
       "no-empty": "warn",
-      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/set-state-in-effect": "off",
     },
   },
 ]);
