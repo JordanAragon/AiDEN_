@@ -5,11 +5,11 @@ import { getDashboardPath, getSession } from "../../utilidades/autenticacion";
 
 const navItems=[
  {label:"Dashboard",path:"/dashboard-admin",icon:<LayoutDashboard size={18}/>,roles:["admin","supervisor","operario"]},
- {label:"Inventario",path:"/inventario",icon:<Package size={18}/>,roles:["admin","supervisor","operario"]},
  {label:"Producción",path:"/produccion",icon:<Sprout size={18}/>,roles:["admin","supervisor","operario"]},
  {label:"Trazabilidad",path:"/trazabilidad",icon:<GitBranch size={18}/>,roles:["admin","supervisor","operario"]},
  {label:"Ambiental",path:"/ambiental",icon:<Thermometer size={18}/>,roles:["admin","supervisor","operario"]},
  {label:"Calidad",path:"/calidad",icon:<ShieldCheck size={18}/>,roles:["admin","supervisor","operario"]},
+ {label:"Inventario",path:"/inventario",icon:<Package size={18}/>,roles:["admin","supervisor"]},
  {label:"Costos",path:"/costos",icon:<CircleDollarSign size={18}/>,roles:["admin","supervisor"]},
  {label:"Personal",path:"/personal",icon:<Users size={18}/>,roles:["admin","supervisor"]},
  {label:"Inteligencia",path:"/ia",icon:<BrainCircuit size={18}/>,roles:["admin","supervisor"]},
