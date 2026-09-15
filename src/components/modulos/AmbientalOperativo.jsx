@@ -78,14 +78,14 @@ function isOutside(row, config) {
 function Modal({ onClose, children }) {
   return (
     <section
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm"
+      className="aiden-modal-fondo fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <article
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="aiden-modal-entrada max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="ambiental-modal-title"
