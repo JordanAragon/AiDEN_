@@ -62,6 +62,7 @@ const read = (key, fallback) => {
 
 const write = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 const uid = () => `INC-${Date.now().toString(36).toUpperCase()}`;
+const traceUid = () => `TRZ-${Date.now().toString(36).toUpperCase()}`;
 
 function Field({ label, children }) {
   return (
@@ -75,14 +76,14 @@ function Field({ label, children }) {
 function Modal({ title, onClose, children }) {
   return (
     <section
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm"
+      className="aiden-modal-fondo fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <article
-        className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
+        className="aiden-modal-entrada max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="calidad-modal-title"
@@ -202,7 +203,7 @@ export default function CalidadOperativo() {
       const trace = read(TRACE, []);
       write(TRACE, [
         {
-          id: `TRZ-${Date.now()}`,
+          id: traceUid(),
           lote: row.lote,
           evento: "Cierre de calidad",
           fecha: new Date().toISOString().slice(0, 10),
@@ -211,6 +212,7 @@ export default function CalidadOperativo() {
         },
         ...trace,
       ]);
+      window.dispatchEvent(new Event("aiden-data-change"));
     }
   };
 
@@ -239,9 +241,26 @@ export default function CalidadOperativo() {
       </header>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Kpi label="Incidencias" value={visible.length} detail="Registros visibles" icon={ClipboardCheck} />
-        <Kpi label="Abiertas" value={open.length} detail="En seguimiento" icon={CircleAlert} tone="amber" />
-        <Kpi label="Alta prioridad" value={high.length} detail="Requieren respuesta" icon={AlertTriangle} tone="red" />
+        <Kpi
+          label="Incidencias"
+          value={visible.length}
+          detail="Registros visibles"
+          icon={ClipboardCheck}
+        />
+        <Kpi
+          label="Abiertas"
+          value={open.length}
+          detail="En seguimiento"
+          icon={CircleAlert}
+          tone="amber"
+        />
+        <Kpi
+          label="Alta prioridad"
+          value={high.length}
+          detail="Requieren respuesta"
+          icon={AlertTriangle}
+          tone="red"
+        />
         <Kpi
           label="Resueltas"
           value={visible.filter((row) => (row.estado ?? row.estadoManual) === "Cerrada").length}
@@ -253,7 +272,10 @@ export default function CalidadOperativo() {
       <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
         <header className="flex flex-wrap items-center gap-3 border-b border-slate-100 p-4">
           <section className="relative min-w-56 flex-1">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search
+              size={15}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -284,7 +306,9 @@ export default function CalidadOperativo() {
                     <p className="font-mono text-[10px] text-emerald-700">
                       {row.codigo} · {row.lote || "Sin lote"}
                     </p>
-                    <h2 className="mt-1 text-sm font-semibold text-slate-900">{row.descripcion}</h2>
+                    <h2 className="mt-1 text-sm font-semibold text-slate-900">
+                      {row.descripcion}
+                    </h2>
                     <p className="mt-1 text-xs text-slate-400">
                       {row.responsable || "Sin asignar"} · {row.fecha}
                     </p>
