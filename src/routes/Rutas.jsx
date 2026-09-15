@@ -18,8 +18,9 @@ import CostosOperativo from "../components/modulos/CostosOperativo";
 import CalidadOperativo from "../components/modulos/CalidadOperativo";
 import AmbientalOperativo from "../components/modulos/AmbientalOperativo";
 import TrazabilidadOperativo from "../components/modulos/TrazabilidadOperativo";
+import ConfiguracionOperativo from "../components/modulos/ConfiguracionOperativo";
 
-function Configuracion() { return <ModuloOperativo key="configuracion" tipo="configuracion" />; }
+function Configuracion() { return <ConfiguracionOperativo />; }
 function Reportes() { return <ModuloOperativo key="reportes" tipo="reportes" />; }
 function Inventario() { return <InventarioOperativo />; }
 function Produccion() { return <ProduccionOperativo />; }
@@ -38,6 +39,7 @@ export default function Rutas() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/terminos" element={<InformacionLegal />} />
+        <Route path="/privacidad" element={<InformacionLegal />} />
         <Route element={<RutaProtegida />}>
           <Route element={<PlantillaPrincipal />}>
             <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]} />}><Route index element={<DashboardAdmin />} /></Route>
