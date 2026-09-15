@@ -1,0 +1,108 @@
+name: Organizar y formatear AiDEN
+
+on:
+  push:
+    branches:
+      - Jordan
+
+permissions:
+  contents: write
+
+jobs:
+  organizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: Jordan
+
+      - name: Reorganizar estructura
+        shell: bash
+        run: |
+          set -e
+
+          mkdir -p src/estilos
+
+          if [ -f src/components/modulos/InventarioOperativo.jsx ]; then
+            git mv src/components/modulos/InventarioOperativo.jsx src/components/inventario/InventarioOperativo.jsx
+          fi
+
+          if [ -f src/components/modulos/ProduccionOperativo.jsx ]; then
+            git mv src/components/modulos/ProduccionOperativo.jsx src/components/produccion/ProduccionOperativo.jsx
+          fi
+
+          if [ -f src/components/modulos/ReportesOperativo.jsx ]; then
+            git mv src/components/modulos/ReportesOperativo.jsx src/components/reportes/ReportesOperativo.jsx
+          fi
+
+          if [ -f src/index.css ]; then
+            git mv src/index.css src/estilos/index.css
+          fi
+
+          if [ -f src/footer.css ]; then
+            git mv src/footer.css src/estilos/footer.css
+          fi
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = {
+              '"../components/modulos/InventarioOperativo"': '"../components/inventario/InventarioOperativo"',
+              '"../components/modulos/ProduccionOperativo"': '"../components/produccion/ProduccionOperativo"',
+              '"../components/modulos/ReportesOperativo"': '"../components/reportes/ReportesOperativo"',
+              '"./index.css"': '"./estilos/index.css"',
+          }
+
+          for path in Path('src').rglob('*'):
+              if not path.is_file() or path.suffix not in {'.js', '.jsx', '.ts', '.tsx', '.css'}:
+                  continue
+              text = path.read_text(encoding='utf-8')
+              original = text
+              for old, new in replacements.items():
+                  text = text.replace(old, new)
+              if text != original:
+                  path.write_text(text, encoding='utf-8')
+          PY
+
+          # Archivos históricos vacíos que ya tienen reemplazo funcional.
+          rm -f src/components/inventario/inventario.jsx
+          rm -f src/components/produccion/produccion.jsx
+          rm -f src/components/reportes/reportes.jsx
+          rm -f src/components/dashboard/dashboard.jsx
+          rm -f src/components/comunes/comunes.jsx
+          rm -f src/plantillas/PlantillaAutenticacion.jsx
+          rm -f src/datos/datos.jsx
+          rm -f src/estilos/estilos.css
+          rm -f src/hooks/hooks.ts
+
+          # ModuloOperativo queda obsoleto si ningún archivo de src lo importa.
+          if ! grep -R --exclude='ModuloOperativo.jsx' --exclude-dir=node_modules -n 'ModuloOperativo' src >/dev/null 2>&1; then
+            rm -f src/components/modulos/ModuloOperativo.jsx
+          fi
+
+          # Eliminar directorios que hayan quedado realmente vacíos.
+          find src/components src/datos src/hooks src/plantillas src/estilos -type d -empty -delete 2>/dev/null || true
+
+      - name: Formatear código
+        run: npx --yes prettier@3.6.2 --write "src/**/*.{js,jsx,ts,tsx,css}" "*.{js,json,css,html}" ".github/workflows/*.yml"
+
+      - name: Verificar estructura y scripts
+        run: |
+          npm ci
+          npm run lint
+          npm run build
+
+      - name: Confirmar cambios
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Sin cambios de reorganización o formato."
+            exit 0
+          fi
+          git commit -m "refactor: organizar estructura y formatear codigo de AiDEN"
+          git push origin HEAD:Jordan
