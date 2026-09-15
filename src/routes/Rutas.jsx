@@ -12,13 +12,14 @@ import InformacionLegal from "../pages/InformacionLegal";
 import RutaProtegida from "../components/autenticacion/RutaProtegida";
 import ModuloOperativo from "../components/modulos/ModuloOperativo";
 import InventarioOperativo from "../components/modulos/InventarioOperativo";
+import ProduccionOperativo from "../components/modulos/ProduccionOperativo";
 import PersonalOperativo from "../components/modulos/PersonalOperativo";
 import CostosOperativo from "../components/modulos/CostosOperativo";
 
 function Configuracion() { return <ModuloOperativo key="configuracion" tipo="configuracion" />; }
 function Reportes() { return <ModuloOperativo key="reportes" tipo="reportes" />; }
 function Inventario() { return <InventarioOperativo />; }
-function Produccion() { return <ModuloOperativo key="produccion" tipo="produccion" />; }
+function Produccion() { return <ProduccionOperativo />; }
 function Trazabilidad() { return <ModuloOperativo key="trazabilidad" tipo="trazabilidad" />; }
 function Ambiental() { return <ModuloOperativo key="ambiental" tipo="ambiental" />; }
 function Calidad() { return <ModuloOperativo key="calidad" tipo="calidad" />; }
@@ -34,6 +35,7 @@ export default function Rutas() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/terminos" element={<InformacionLegal />} />
+        <Route path="/privacidad" element={<InformacionLegal />} />
         <Route element={<RutaProtegida />}>
           <Route element={<PlantillaPrincipal />}>
             <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]} />}>
