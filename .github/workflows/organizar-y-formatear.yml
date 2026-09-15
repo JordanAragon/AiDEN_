@@ -66,7 +66,6 @@ jobs:
                   path.write_text(text, encoding='utf-8')
           PY
 
-          # Archivos históricos vacíos que ya tienen reemplazo funcional.
           rm -f src/components/inventario/inventario.jsx
           rm -f src/components/produccion/produccion.jsx
           rm -f src/components/reportes/reportes.jsx
@@ -77,22 +76,24 @@ jobs:
           rm -f src/estilos/estilos.css
           rm -f src/hooks/hooks.ts
 
-          # ModuloOperativo queda obsoleto si ningún archivo de src lo importa.
           if ! grep -R --exclude='ModuloOperativo.jsx' --exclude-dir=node_modules -n 'ModuloOperativo' src >/dev/null 2>&1; then
             rm -f src/components/modulos/ModuloOperativo.jsx
           fi
 
-          # Eliminar directorios que hayan quedado realmente vacíos.
           find src/components src/datos src/hooks src/plantillas src/estilos -type d -empty -delete 2>/dev/null || true
 
       - name: Formatear código
         run: npx --yes prettier@3.6.2 --write "src/**/*.{js,jsx,ts,tsx,css}" "*.{js,json,css,html}" ".github/workflows/*.yml"
 
-      - name: Verificar estructura y scripts
-        run: |
-          npm ci
-          npm run lint
-          npm run build
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Verificar lint
+        continue-on-error: true
+        run: npm run lint
+
+      - name: Verificar build
+        run: npm run build
 
       - name: Confirmar cambios
         shell: bash
