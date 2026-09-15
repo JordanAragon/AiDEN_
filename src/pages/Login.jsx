@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Leaf, Eye, EyeOff } from "lucide-react";
-import { useLocation, useNavigate, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ArrowRight, Eye, EyeOff, Leaf, Loader2 } from "lucide-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import loginImage from "../assets/imagenes/login.png";
 import { ensureInitialUser, login } from "../utilidades/autenticacion";
 
@@ -10,197 +10,100 @@ export default function Login() {
   const [showPass, setShowPass] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(
-    () => localStorage.getItem("aiden_remember") === "true",
-  );
+  const [remember, setRemember] = useState(() => localStorage.getItem("aiden_remember") === "true");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+  useEffect(() => {
+    ensureInitialUser();
+    if (location.state?.registered) setSuccess("Cuenta creada. Ahora puedes iniciar sesión.");
+  }, [location.state]);
+
+  const handleLogin = (event) => {
+    event.preventDefault();
+    if (loading) return;
     setError("");
-    const result = login(email, password, remember);
+    setSuccess("");
+    setLoading(true);
 
-    if (!result.ok) {
-      setError(result.message);
-      return;
-    }
-
-    const destination =
-      location.state?.from ||
-      (result.user.role === "admin"
-        ? "/dashboard-admin"
-        : result.user.role === "supervisor"
-          ? "/dashboard-supervisor"
-          : "/dashboard-operario");
-
-    navigate(destination, { replace: true });
+    window.setTimeout(() => {
+      const result = login(email, password, remember);
+      setLoading(false);
+      if (!result.ok) {
+        setError(result.message);
+        return;
+      }
+      const destination = location.state?.from || (result.user.role === "admin" ? "/dashboard-admin" : result.user.role === "supervisor" ? "/dashboard-supervisor" : "/dashboard-operario");
+      navigate(destination, { replace: true });
+    }, 180);
   };
 
-  ensureInitialUser();
-
   return (
-    <main className="min-h-screen flex bg-white font-sans text-slate-800">
-      <aside className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
-        <img
-          src={loginImage}
-          alt="Vivero agrícola"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <section
-          className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 via-emerald-800/80 to-emerald-900/70"
-          aria-hidden="true"
-        />
-        <section className="relative z-10 flex flex-col h-full p-12">
-          <header className="flex items-center gap-2 mb-auto">
-            <span className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur">
-              <Leaf size={18} className="text-white" />
-            </span>
-            <span className="font-bold text-white text-2xl tracking-tight">
-              AiDEN
-            </span>
-          </header>
-          <article className="mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4 leading-tight">
-              Gestión inteligente para viveros
-            </h2>
-            <p className="text-white/75 text-lg leading-relaxed max-w-sm">
-              Centraliza la operación agrícola, organiza la información y
-              consulta el estado de tus procesos desde un solo lugar.
-            </p>
-            <section className="flex gap-6 mt-8">
-              {[
-                ["9", "Módulos"],
-                ["48+", "Lotes"],
-                ["3", "Roles"],
-              ].map(([value, label]) => (
-                <article key={label}>
-                  <p className="text-3xl font-bold text-white">{value}</p>
-                  <p className="text-white/60 text-sm">{label}</p>
-                </article>
-              ))}
-            </section>
-          </article>
+    <main className="flex min-h-screen bg-[#f5f7f5] text-slate-900">
+      <aside className="relative hidden min-h-screen overflow-hidden bg-[#0b2f20] lg:flex lg:w-[53%]">
+        <img src={loginImage} alt="Vivero agrícola" className="absolute inset-0 h-full w-full object-cover opacity-70" />
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(11,47,32,.97),rgba(11,47,32,.72),rgba(11,47,32,.84))]" aria-hidden="true" />
+        <section className="relative z-10 flex w-full flex-col p-10 xl:p-14">
+          <Link to="/" className="flex items-center gap-2 text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/15 bg-white/10"><Leaf size={17} /></span>
+            <span className="text-xl font-bold tracking-tight">AiDEN</span>
+          </Link>
+          <div className="mt-auto max-w-xl pb-6">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-200">Gestión operativa para viveros</p>
+            <h1 className="mt-4 text-5xl font-semibold leading-[.98] tracking-[-.05em] text-white xl:text-6xl">La operación del vivero, en contexto.</h1>
+            <p className="mt-6 max-w-lg text-base leading-7 text-white/65">Producción, inventario, ambiente, calidad y trazabilidad conectados alrededor de la información que realmente mueve el trabajo.</p>
+            <div className="mt-8 flex gap-8 border-t border-white/10 pt-6">
+              <div><strong className="block text-2xl text-white">03</strong><span className="text-xs text-white/50">roles</span></div>
+              <div><strong className="block text-2xl text-white">09</strong><span className="text-xs text-white/50">módulos</span></div>
+              <div><strong className="block text-2xl text-white">01</strong><span className="text-xs text-white/50">operación conectada</span></div>
+            </div>
+          </div>
         </section>
       </aside>
 
-      <section className="flex flex-col justify-center flex-1 max-w-md w-full mx-auto px-8 py-12">
-        <header className="mb-8 lg:hidden flex items-center gap-2">
-          <span className="w-8 h-8 bg-emerald-700 rounded-lg flex items-center justify-center">
-            <Leaf size={15} className="text-white" />
-          </span>
-          <span className="font-bold text-emerald-700 text-lg tracking-tight">
-            AiDEN
-          </span>
-        </header>
+      <section className="flex w-full items-center justify-center px-5 py-10 sm:px-8 lg:w-[47%] lg:px-12">
+        <div className="w-full max-w-md">
+          <header className="mb-8 lg:hidden">
+            <Link to="/" className="inline-flex items-center gap-2 text-emerald-900"><span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-900 text-white"><Leaf size={15} /></span><span className="font-bold tracking-tight">AiDEN</span></Link>
+          </header>
 
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">Bienvenido</h1>
-        <p className="text-slate-500 mb-8 text-sm">
-          Ingresa tus credenciales para acceder a tu panel.
-        </p>
+          <div className="mb-7">
+            <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">Acceso</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Bienvenido de nuevo.</h2>
+            <p className="mt-2 text-sm leading-6 text-slate-500">Ingresa para continuar con la operación de tu vivero.</p>
+          </div>
 
-        {error && (
-          <p
-            role="alert"
-            className="mb-5 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700"
-          >
-            {error}
-          </p>
-        )}
+          {success && <p role="status" className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{success}</p>}
+          {error && <p role="alert" className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
-        <form className="space-y-5" onSubmit={handleLogin}>
-          <section className="flex flex-col gap-1.5">
-            <label
-              htmlFor="email"
-              className="text-sm font-medium text-slate-700"
-            >
-              Correo Electrónico
-            </label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 text-sm"
-              placeholder="tu@vivero.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </section>
+          <form onSubmit={handleLogin} className="space-y-5">
+            <Field label="Correo electrónico"><input id="email" name="email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="tu@vivero.com" /></Field>
+            <Field label="Contraseña">
+              <div className="relative">
+                <input id="password" name="password" type={showPass ? "text" : "password"} autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Tu contraseña" className="pr-11" />
+                <button type="button" onClick={() => setShowPass((value) => !value)} aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700">{showPass ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+              </div>
+            </Field>
 
-          <section className="flex flex-col gap-1.5">
-            <label
-              htmlFor="password"
-              className="text-sm font-medium text-slate-700"
-            >
-              Contraseña
-            </label>
-            <section className="relative">
-              <input
-                id="password"
-                type={showPass ? "text" : "password"}
-                autoComplete="current-password"
-                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 text-sm pr-10"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPass(!showPass)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-emerald-700 transition-colors"
-                aria-label={
-                  showPass ? "Ocultar contraseña" : "Mostrar contraseña"
-                }
-              >
-                {showPass ? <EyeOff size={16} /> : <Eye size={16} />}
-              </button>
-            </section>
-          </section>
+            <div className="flex items-center justify-between gap-4">
+              <label className="inline-flex items-center gap-2 text-sm text-slate-500"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-4 w-4 accent-emerald-700" />Recordarme</label>
+              <Link to="/forgot-password" className="text-sm font-semibold text-emerald-800 hover:text-emerald-950">Olvidé mi contraseña</Link>
+            </div>
 
-          <section className="flex items-center justify-between">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={remember}
-                onChange={(e) => setRemember(e.target.checked)}
-                className="w-4 h-4 accent-emerald-600 rounded"
-              />
-              <span className="text-sm text-slate-500">Recordarme</span>
-            </label>
-            <Link
-              to="/forgot-password"
-              className="text-sm text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
-            >
-              Olvidé mi contraseña
-            </Link>
-          </section>
+            <button type="submit" disabled={loading} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-900 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60">
+              {loading ? <><Loader2 size={17} className="animate-spin" /> Comprobando acceso...</> : <>Iniciar sesión <ArrowRight size={16} /></>}
+            </button>
+          </form>
 
-          <button
-            type="submit"
-            className="w-full py-3 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold rounded-lg text-sm transition-colors flex justify-center"
-          >
-            Iniciar Sesión
-          </button>
-        </form>
-
-        <p className="text-center mt-6 text-sm text-slate-500">
-          ¿No tienes cuenta?{" "}
-          <Link
-            to="/signup"
-            className="text-emerald-600 hover:text-emerald-800 font-medium transition-colors"
-          >
-            Crear cuenta
-          </Link>
-        </p>
-
-        <Link
-          to="/"
-          className="text-center mt-4 text-xs text-slate-400 hover:text-emerald-700 transition-colors block"
-        >
-          ← Volver al inicio
-        </Link>
+          <p className="mt-6 text-center text-sm text-slate-500">¿No tienes cuenta? <Link to="/signup" className="font-semibold text-emerald-800 hover:text-emerald-950">Crear cuenta</Link></p>
+          <p className="mt-8 text-center text-[11px] leading-5 text-slate-400">V1 frontend local · Las credenciales se almacenan únicamente en este navegador durante el desarrollo.</p>
+        </div>
       </section>
     </main>
   );
+}
+
+function Field({ label, children }) {
+  return <label className="block text-sm font-medium text-slate-700"><span className="mb-1.5 block">{label}</span>{children}</label>;
 }
