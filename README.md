@@ -54,3 +54,4 @@ npm run build
 La rama `Jordan` corresponde a la etapa actual de desarrollo frontend. La persistencia remota, autenticación real, base de datos, APIs y servicios de inteligencia todavía no están configurados.
 
 La autenticación local que existe en esta etapa es únicamente para permitir que los flujos del frontend puedan probarse sin backend.
+
