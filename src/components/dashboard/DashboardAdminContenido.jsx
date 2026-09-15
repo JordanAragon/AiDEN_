@@ -1,45 +1,57 @@
-import { AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { Users, Shield, Activity, AlertTriangle, Sprout, TrendingUp, Settings, Eye, UserCheck } from "lucide-react";
+import { useMemo } from "react";
+import { AlertTriangle, BarChart3, CircleDollarSign, ClipboardCheck, Settings, ShieldCheck, Sprout, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const datosIngresos = [
-  { mes: "Mar", ingresos: 84000, costos: 52000 }, { mes: "Abr", ingresos: 91000, costos: 58000 }, { mes: "May", ingresos: 88000, costos: 54000 },
-  { mes: "Jun", ingresos: 102000, costos: 61000 }, { mes: "Jul", ingresos: 97000, costos: 59000 }, { mes: "Ago", ingresos: 115000, costos: 68000 },
-];
-const datosRoles = [
-  { name: "Supervisores", value: 5, color: "#0A4F31" }, { name: "Operarios", value: 18, color: "#157347" }, { name: "Administradores", value: 2, color: "#E9F5EF" },
-];
-const auditoria = [
-  { user: "Jordan Aragon", action: "Modificó el rol de Carlos Méndez a Supervisor", time: "hace 12 min" },
-  { user: "Sistema", action: "Copia de seguridad procesada correctamente", time: "hace 1 h" },
-  { user: "Jordan Aragon", action: "Creó el usuario Valentina Soto", time: "hace 2 h" },
-  { user: "Carlos Méndez", action: "Exportó el reporte mensual de producción", time: "hace 3 h" },
-  { user: "Sistema", action: "Alerta de temperatura resuelta", time: "hace 5 h" },
-];
-const usoModulos = [
-  { mod: "Producción", uso: 92 }, { mod: "Inventario", uso: 85 }, { mod: "Ambiental", uso: 71 }, { mod: "Calidad", uso: 63 }, { mod: "Personal", uso: 55 }, { mod: "Costos", uso: 48 },
-];
+const leer = (key, fallback = []) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
+const money = value => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(value) || 0);
 
 export default function DashboardAdminContenido() {
   const navigate = useNavigate();
-  const kpis = [
-    { label: "Usuarios Activos", value: "25", change: "+2 este mes", icon: <Users size={20} />, color: "text-emerald-700", bg: "bg-emerald-50" },
-    { label: "Lotes en Sistema", value: "48", change: "94% con trazabilidad", icon: <Sprout size={20} />, color: "text-emerald-600", bg: "bg-[#E9F5EF]" },
-    { label: "Ingresos del Mes", value: "$115K", change: "+18.5% vs. anterior", icon: <TrendingUp size={20} />, color: "text-blue-600", bg: "bg-blue-50" },
-    { label: "Alertas Sistema", value: "2", change: "Revisión requerida", icon: <AlertTriangle size={20} />, color: "text-red-600", bg: "bg-red-50" },
-  ];
-  return (
-    <article className="space-y-6">
-      <header className="flex items-center justify-between"><section><h1 className="text-2xl font-bold text-slate-800">Dashboard · Administrador</h1><p className="text-sm text-slate-500 mt-1">Vista general del sistema AiDEN.</p></section><section className="flex gap-2"><button type="button" onClick={() => navigate("/configuracion")} className="px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors"><Settings size={15} />Configuración</button><button type="button" onClick={() => navigate("/reportes")} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors"><Activity size={15} />Reportes</button></section></header>
-      <section className="grid grid-cols-2 xl:grid-cols-4 gap-4">{kpis.map((kpi) => <article key={kpi.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm"><span className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 ${kpi.bg} ${kpi.color}`}>{kpi.icon}</span><p className="text-2xl font-bold text-slate-800 font-sans">{kpi.value}</p><p className="text-sm text-slate-500 mt-0.5">{kpi.label}</p><p className="text-xs text-slate-400 mt-2 border-t border-slate-100 pt-2">{kpi.change}</p></article>)}</section>
-      <section className="grid lg:grid-cols-3 gap-6">
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2"><p className="font-semibold text-slate-800 mb-1">Ingresos vs. Costos</p><p className="text-xs text-slate-500 mb-5">Últimos 6 meses</p><ResponsiveContainer width="100%" height={200}><AreaChart data={datosIngresos}><defs><linearGradient id="adminIng" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#0A4F31" stopOpacity={0.15} /><stop offset="95%" stopColor="#0A4F31" stopOpacity={0} /></linearGradient><linearGradient id="adminCost" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#DC2626" stopOpacity={0.1} /><stop offset="95%" stopColor="#DC2626" stopOpacity={0} /></linearGradient></defs><CartesianGrid strokeDasharray="3 3" stroke="#E5EDE8" /><XAxis dataKey="mes" tick={{ fontSize: 12, fill: "#64748b" }} axisLine={false} tickLine={false} /><YAxis tick={{ fontSize: 11, fill: "#64748b" }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v / 1000}K`} /><Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} formatter={(v) => [`$${(v / 1000).toFixed(0)}K`]} /><Legend iconSize={8} wrapperStyle={{ fontSize: 12 }} /><Area type="monotone" dataKey="ingresos" stroke="#0A4F31" strokeWidth={2} fill="url(#adminIng)" name="Ingresos" /><Area type="monotone" dataKey="costos" stroke="#DC2626" strokeWidth={2} fill="url(#adminCost)" name="Costos" /></AreaChart></ResponsiveContainer></section>
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm"><p className="font-semibold text-slate-800 mb-1">Usuarios por Rol</p><p className="text-xs text-slate-500 mb-4">25 usuarios totales</p><figure className="flex justify-center"><PieChart width={160} height={160}><Pie data={datosRoles} cx={75} cy={75} innerRadius={45} outerRadius={70} dataKey="value" paddingAngle={3}>{datosRoles.map((entry) => <Cell key={entry.name} fill={entry.color} stroke="none" />)}</Pie><Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 12 }} /></PieChart></figure><section className="space-y-2 mt-2">{datosRoles.map((rol) => <article key={rol.name} className="flex items-center justify-between text-sm"><section className="flex items-center gap-2"><span className="w-2.5 h-2.5 rounded-full" style={{ background: rol.color === "#E9F5EF" ? "#0A4F31" : rol.color }} /><span className="text-slate-500 text-xs">{rol.name}</span></section><span className="font-medium text-slate-800 text-xs">{rol.value}</span></article>)}</section></section>
-      </section>
-      <section className="grid lg:grid-cols-5 gap-6">
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-3"><header className="flex items-center gap-2 mb-5"><Shield size={16} className="text-emerald-700" /><p className="font-semibold text-slate-800">Registro de Auditoría</p></header><section>{auditoria.map((item, i) => <article key={i} className="flex gap-3 py-3 border-b border-slate-100 last:border-0"><span className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center shrink-0"><UserCheck size={13} className="text-emerald-700" /></span><section className="flex-1 min-w-0"><p className="text-sm text-slate-700">{item.action}</p><section className="flex items-center gap-3 mt-0.5"><span className="text-xs font-medium text-emerald-700">{item.user}</span><span className="text-xs text-slate-400">{item.time}</span></section></section></article>)}</section><button type="button" onClick={() => navigate("/configuracion")} className="w-full mt-4 px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-colors"><Eye size={13} />Ver auditoría completa</button></section>
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2"><p className="font-semibold text-slate-800 mb-1">Uso de Módulos</p><p className="text-xs text-slate-500 mb-5">Actividad relativa este mes</p><ResponsiveContainer width="100%" height={220}><BarChart data={usoModulos} layout="vertical"><CartesianGrid strokeDasharray="3 3" stroke="#E5EDE8" horizontal={false} /><XAxis type="number" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(v) => `${v}%`} /><YAxis dataKey="mod" type="category" tick={{ fontSize: 10, fill: "#64748b" }} axisLine={false} tickLine={false} width={65} /><Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #e2e8f0", fontSize: 11 }} formatter={(v) => [`${v}%`, "Uso"]} /><Bar dataKey="uso" fill="#157347" radius={[0, 4, 4, 0]} /></BarChart></ResponsiveContainer></section>
-      </section>
-    </article>
-  );
+  const data = useMemo(() => {
+    const usuarios = leer("aiden_users", []);
+    const lotes = leer("aiden-produccion", []);
+    const costos = leer("aiden-costos", []);
+    const calidad = leer("aiden-calidad", []);
+    const tareas = leer("aiden-tareas", []);
+    const inventario = leer("aiden-inventario", []);
+    const alertas = [
+      ...inventario.filter(r => Number(r.stock) <= Number(r.minimo)).map(r => ({ tipo: "Inventario", texto: `${r.nombre} está bajo el mínimo`, ruta: "/inventario" })),
+      ...calidad.filter(r => r.estadoManual !== "Cerrada" && r.prioridad === "Alta").map(r => ({ tipo: "Calidad", texto: `${r.codigo || r.id} requiere atención`, ruta: "/calidad" })),
+    ];
+    const ingresos = costos.filter(r => r.tipo === "ingreso").reduce((a, r) => a + Number(r.valor || 0), 0);
+    const gastos = costos.filter(r => r.tipo !== "ingreso").reduce((a, r) => a + Number(r.valor || 0), 0);
+    return { usuarios, lotes, costos, calidad, tareas, inventario, alertas, ingresos, gastos };
+  }, []);
+
+  const roles = { admin: 0, supervisor: 0, operario: 0 };
+  data.usuarios.forEach(u => { if (roles[u.role] !== undefined) roles[u.role] += 1; });
+  const pendientes = data.tareas.filter(t => t.estado !== "Completada").length;
+  const lotesAtencion = data.lotes.filter(l => l.etapa === "Adaptación").length;
+
+  return <article className="space-y-6">
+    <header className="flex flex-wrap items-start justify-between gap-4">
+      <section><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">AiDEN / control del sistema</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Centro de administración</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">Supervisa usuarios, operación, seguridad y desempeño general. Aquí se toman decisiones del sistema, no se ejecutan tareas de campo.</p></section>
+      <section className="flex gap-2"><button type="button" onClick={() => navigate("/personal")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"><Users size={15}/>Gestionar personal</button><button type="button" onClick={() => navigate("/configuracion")} className="inline-flex items-center gap-2 rounded-xl bg-emerald-700 px-3 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800"><Settings size={15}/>Configuración</button></section>
+    </header>
+
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <Kpi icon={Users} label="Usuarios" value={data.usuarios.length || "—"} detail={`${roles.supervisor} supervisores · ${roles.operario} operarios`} />
+      <Kpi icon={Sprout} label="Lotes activos" value={data.lotes.length} detail={lotesAtencion ? `${lotesAtencion} en adaptación` : "Sin bloqueos de etapa"} tone={lotesAtencion ? "amber" : "green"} />
+      <Kpi icon={CircleDollarSign} label="Balance registrado" value={money(data.ingresos - data.gastos)} detail={`${money(data.ingresos)} ingresos · ${money(data.gastos)} gastos`} tone="blue" />
+      <Kpi icon={ShieldCheck} label="Alertas operativas" value={data.alertas.length} detail={data.alertas.length ? "Requieren seguimiento" : "Todo bajo control"} tone={data.alertas.length ? "red" : "green"} />
+    </section>
+
+    <section className="grid gap-4 lg:grid-cols-[1.45fr_.85fr]">
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><header className="flex items-start justify-between"><section><h2 className="font-semibold text-slate-900">Estado operativo</h2><p className="mt-1 text-xs text-slate-400">Indicadores reales de la información almacenada</p></section><BarChart3 size={18} className="text-emerald-700"/></header><section className="mt-5 grid gap-3 sm:grid-cols-3"><Stat label="Tareas abiertas" value={pendientes} onClick={() => navigate("/personal")} /><Stat label="Incidencias abiertas" value={data.calidad.filter(r => r.estadoManual !== "Cerrada").length} onClick={() => navigate("/calidad")} /><Stat label="Insumos bajo mínimo" value={data.inventario.filter(r => Number(r.stock) <= Number(r.minimo)).length} onClick={() => navigate("/inventario")} /></section><section className="mt-5 rounded-xl bg-slate-50 p-4"><p className="text-xs font-semibold text-slate-500">Responsabilidad del administrador</p><p className="mt-1 text-sm leading-6 text-slate-700">Configurar reglas, administrar usuarios, revisar seguridad y usar reportes para evaluar el funcionamiento global de AiDEN.</p></section></article>
+      <article className="rounded-2xl bg-slate-950 p-5 text-white"><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Prioridad</p><h2 className="mt-2 text-lg font-semibold">Alertas que requieren decisión</h2><section className="mt-4 space-y-2">{data.alertas.slice(0, 4).map(a => <button type="button" key={`${a.tipo}-${a.texto}`} onClick={() => navigate(a.ruta)} className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-left hover:bg-white/10"><p className="text-xs font-semibold text-emerald-300">{a.tipo}</p><p className="mt-1 text-sm text-white/80">{a.texto}</p></button>)}{!data.alertas.length && <p className="text-sm text-white/55">No hay alertas pendientes.</p>}</section></article>
+    </section>
+
+    <section className="grid gap-4 lg:grid-cols-3">
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm lg:col-span-2"><header className="flex items-center justify-between"><section><h2 className="font-semibold text-slate-900">Distribución de acceso</h2><p className="mt-1 text-xs text-slate-400">El administrador controla quién puede hacer qué</p></section><Users size={18} className="text-slate-400"/></header><section className="mt-5 space-y-3">{[["Administrador",roles.admin,"bg-emerald-700"],["Supervisor",roles.supervisor,"bg-sky-500"],["Operario",roles.operario,"bg-amber-500"]].map(([label,count,bar]) => <section key={label}><section className="mb-1 flex justify-between text-xs"><span className="font-medium text-slate-600">{label}</span><span className="font-semibold text-slate-800">{count}</span></section><section className="h-2 rounded-full bg-slate-100"><span className={`block h-full rounded-full ${bar}`} style={{ width: `${Math.min(100, (count / Math.max(1, data.usuarios.length)) * 100)}%` }}/></section></section>)}</section></article>
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><header className="flex items-center gap-2"><ClipboardCheck size={17} className="text-emerald-700"/><h2 className="font-semibold text-slate-900">Acciones rápidas</h2></header><section className="mt-4 grid gap-2"><Quick onClick={() => navigate("/reportes")}>Abrir reportes</Quick><Quick onClick={() => navigate("/personal")}>Administrar usuarios y tareas</Quick><Quick onClick={() => navigate("/costos")}>Revisar costos</Quick><Quick onClick={() => navigate("/configuracion")}>Revisar reglas del sistema</Quick></section></article>
+    </section>
+  </article>;
 }
+function Kpi({ icon:Icon,label,value,detail,tone="green" }) { const map={green:"bg-emerald-50 text-emerald-700",amber:"bg-amber-50 text-amber-700",red:"bg-red-50 text-red-700",blue:"bg-sky-50 text-sky-700"}; return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${map[tone]}`}><Icon size={17}/></span><p className="mt-4 text-2xl font-bold tracking-tight text-slate-950">{value}</p><p className="mt-1 text-xs font-semibold text-slate-600">{label}</p><p className="mt-1 text-[11px] text-slate-400">{detail}</p></article>; }
+function Stat({label,value,onClick}) { return <button type="button" onClick={onClick} className="rounded-xl border border-slate-200 bg-white p-4 text-left hover:border-emerald-200 hover:bg-emerald-50/30"><p className="text-2xl font-bold text-slate-900">{value}</p><p className="mt-1 text-xs text-slate-500">{label}</p><span className="mt-3 block text-[11px] font-semibold text-emerald-700">Abrir módulo →</span></button>; }
+function Quick({children,onClick}) { return <button type="button" onClick={onClick} className="flex items-center justify-between rounded-xl border border-slate-200 px-3 py-2.5 text-left text-xs font-semibold text-slate-600 hover:border-emerald-200 hover:text-emerald-700">{children}<span>→</span></button>; }
