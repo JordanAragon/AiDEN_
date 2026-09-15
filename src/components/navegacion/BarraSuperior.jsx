@@ -214,6 +214,73 @@ export default function BarraSuperior() {
       ? modulos.filter((item) => item.nombre.toLowerCase().includes(value))
       : modulos;
   }, [search, modulos]);
+  // Índice de registros reales (no solo nombres de módulo) para que Cmd/Ctrl+K
+  // encuentre un lote, un insumo o una incidencia directamente, respetando
+  // los mismos módulos que el rol actual puede ver.
+  const indiceRegistros = useMemo(() => {
+    const disponibles = new Set(modulos.map((m) => m.nombre));
+    const registros = [];
+    if (disponibles.has("Producción"))
+      leer("produccion").forEach((r) =>
+        registros.push({
+          tipo: "Producción",
+          texto: `${r.lote} · ${r.cultivo || "sin cultivo"}`,
+          ruta: "/produccion",
+        }),
+      );
+    if (disponibles.has("Inventario"))
+      leer("inventario").forEach((r) =>
+        registros.push({
+          tipo: "Inventario",
+          texto: r.nombre,
+          ruta: "/inventario",
+        }),
+      );
+    if (disponibles.has("Trazabilidad"))
+      leer("trazabilidad").forEach((r) =>
+        registros.push({
+          tipo: "Trazabilidad",
+          texto: `${r.evento} · ${r.lote}`,
+          ruta: "/trazabilidad",
+        }),
+      );
+    if (disponibles.has("Calidad"))
+      leer("calidad").forEach((r) =>
+        registros.push({
+          tipo: "Calidad",
+          texto: `${r.codigo || r.lote} · ${r.descripcion || ""}`.trim(),
+          ruta: "/calidad",
+        }),
+      );
+    if (disponibles.has("Ambiental"))
+      leer("ambiental").forEach((r) =>
+        registros.push({
+          tipo: "Ambiental",
+          texto: r.zona,
+          ruta: "/ambiental",
+        }),
+      );
+    if (disponibles.has("Costos"))
+      leer("costos").forEach((r) =>
+        registros.push({
+          tipo: "Costos",
+          texto: `${r.concepto} · ${r.lote || "sin lote"}`,
+          ruta: "/costos",
+        }),
+      );
+    if (disponibles.has("Personal"))
+      leer("personal").forEach((r) =>
+        registros.push({ tipo: "Personal", texto: r.nombre, ruta: "/personal" }),
+      );
+    return registros;
+  }, [modulos]);
+  const resultadosRegistros = useMemo(() => {
+    const value = search.trim().toLowerCase();
+    if (!value) return [];
+    return indiceRegistros
+      .filter((r) => r.texto.toLowerCase().includes(value))
+      .slice(0, 6);
+  }, [search, indiceRegistros]);
   const irAModulo = (ruta) => {
     navigate(ruta === "/dashboard-admin" ? getDashboardPath(role) : ruta);
     setSearch("");
@@ -258,7 +325,8 @@ export default function BarraSuperior() {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            if (resultados[0]) irAModulo(resultados[0].ruta);
+            if (resultadosRegistros[0]) irAModulo(resultadosRegistros[0].ruta);
+            else if (resultados[0]) irAModulo(resultados[0].ruta);
           }}
           className="relative"
         >
@@ -272,8 +340,8 @@ export default function BarraSuperior() {
             onChange={(e) => setSearch(e.target.value)}
             onFocus={() => setShowPalette(true)}
             className="w-72 rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-16 text-sm outline-none focus:border-emerald-500"
-            placeholder="Buscar o ir a un módulo..."
-            aria-label="Buscar módulos"
+            placeholder="Buscar módulos, lotes, insumos..."
+            aria-label="Buscar módulos y registros"
           />
           <kbd className="absolute right-2 top-1/2 hidden -translate-y-1/2 items-center gap-1 rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-semibold text-slate-400 sm:flex">
             <Command size={10} />K
@@ -281,7 +349,7 @@ export default function BarraSuperior() {
         </form>
         {showPalette && (
           <section
-            className="absolute left-0 top-12 w-80 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"
+            className="absolute left-0 top-12 w-96 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl"
             role="dialog"
           >
             <header className="flex items-center justify-between px-2 pb-2">
@@ -317,6 +385,33 @@ export default function BarraSuperior() {
                 No se encontró un módulo disponible para tu rol.
               </p>
             )}
+            {resultadosRegistros.length > 0 && (
+              <>
+                <p className="mt-1 px-3 pb-1 pt-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  Registros
+                </p>
+                {resultadosRegistros.map((item, index) => (
+                  <button
+                    key={`${item.ruta}-${item.texto}-${index}`}
+                    type="button"
+                    onClick={() => irAModulo(item.ruta)}
+                    className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"
+                  >
+                    <span className="shrink-0 rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-500">
+                      {item.tipo}
+                    </span>
+                    <span className="truncate">{item.texto}</span>
+                  </button>
+                ))}
+              </>
+            )}
+            {search.trim() &&
+              !resultados.length &&
+              !resultadosRegistros.length && (
+                <p className="px-3 py-4 text-center text-xs text-slate-400">
+                  Sin coincidencias para "{search.trim()}".
+                </p>
+              )}
           </section>
         )}
       </section>
