@@ -69,8 +69,8 @@ const money = (v) =>
   }).format(Number(v) || 0);
 function Modal({ title, onClose, children }) {
   return (
-    <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-      <article className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <section className="aiden-modal-fondo fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+      <article className="aiden-modal-entrada max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <header className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white px-5 py-4">
           <h2 className="font-semibold text-slate-900">{title}</h2>
           <button
@@ -381,7 +381,7 @@ export default function InventarioOperativo() {
                     <td className="px-4 py-3 w-44">
                       <section className="h-2 rounded-full bg-slate-100">
                         <span
-                          className={`block h-full rounded-full ${Number(i.stock) <= Number(i.minimo) ? "bg-amber-500" : "bg-emerald-500"}`}
+                          className={`block h-full rounded-full transition-[width] duration-500 ease-out ${Number(i.stock) <= Number(i.minimo) ? "bg-amber-500" : "bg-emerald-500"}`}
                           style={{ width: `${pct}%` }}
                         />
                       </section>
