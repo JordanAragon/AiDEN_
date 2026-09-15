@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./estilos/index.css";
 import "./estilos/modo-oscuro.css";
+import "./estilos/animaciones-app.css";
 import App from "./App.jsx";
 
 const temaGuardado = localStorage.getItem("aiden-theme");
