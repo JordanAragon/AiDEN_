@@ -9,7 +9,8 @@ const INITIAL_USERS = [
   {
     id: "usr-admin",
     name: "Jordan Aragon",
-    email: "jordanaragon" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
+    email:
+      "jordanaragon" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
     clave: CLAVE_INICIAL,
     role: "admin",
   },
@@ -23,7 +24,8 @@ const INITIAL_USERS = [
   {
     id: "usr-supervisor",
     name: "Supervisor",
-    email: "supervisor" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
+    email:
+      "supervisor" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
     clave: CLAVE_INICIAL,
     role: "supervisor",
   },
@@ -70,7 +72,12 @@ export function login(email, password, remember = false) {
 
   if (!user) return { ok: false, message: "Correo o contraseña incorrectos." };
 
-  const session = { id: user.id, name: user.name, email: user.email, role: user.role };
+  const session = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+  };
   localStorage.removeItem(STORAGE_SESSION);
   sessionStorage.removeItem(STORAGE_SESSION);
 
@@ -138,7 +145,9 @@ export function updateSessionRole(role) {
   if (!session) return null;
 
   const next = { ...session, role };
-  const storage = localStorage.getItem(STORAGE_SESSION) ? localStorage : sessionStorage;
+  const storage = localStorage.getItem(STORAGE_SESSION)
+    ? localStorage
+    : sessionStorage;
   storage.setItem(STORAGE_SESSION, JSON.stringify(next));
   return next;
 }
