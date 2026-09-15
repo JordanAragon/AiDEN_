@@ -2,34 +2,31 @@ const STORAGE_USERS = "aiden_users";
 const STORAGE_SESSION = "aiden_session";
 const STORAGE_REMEMBER = "aiden_remember";
 
-const PARTES_CORREO = ["@", "aiden", ".com"];
-const CLAVE_INICIAL = String.fromCharCode(97, 105, 100, 101, 110, 49, 50, 51);
-
 const INITIAL_USERS = [
   {
     id: "usr-admin",
     name: "Jordan Aragon",
-    email:
-      "jordanaragon" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
-    clave: CLAVE_INICIAL,
+    email: "jordanaragon@aiden.com",
+    password: "aiden123",
     role: "admin",
   },
   {
     id: "usr-operario",
     name: "Operario",
-    email: "operario" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
-    clave: CLAVE_INICIAL,
+    email: "operario@aiden.com",
+    password: "aiden123",
     role: "operario",
   },
   {
     id: "usr-supervisor",
     name: "Supervisor",
-    email:
-      "supervisor" + PARTES_CORREO[0] + PARTES_CORREO[1] + PARTES_CORREO[2],
-    clave: CLAVE_INICIAL,
+    email: "supervisor@aiden.com",
+    password: "aiden123",
     role: "supervisor",
   },
 ];
+
+const VALID_ROLES = new Set(["admin", "supervisor", "operario"]);
 
 function readUsers() {
   try {
@@ -45,32 +42,64 @@ function writeUsers(users) {
   localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
 }
 
+function sanitizeSession(value) {
+  if (!value || typeof value !== "object") return null;
+  if (!value.id || !value.email || !VALID_ROLES.has(value.role)) return null;
+  return {
+    id: String(value.id),
+    name: String(value.name || "Usuario"),
+    email: String(value.email).toLowerCase(),
+    role: value.role,
+  };
+}
+
 function readSession() {
   try {
     const persistent = localStorage.getItem(STORAGE_SESSION);
-    if (persistent) return JSON.parse(persistent);
     const temporary = sessionStorage.getItem(STORAGE_SESSION);
-    return temporary ? JSON.parse(temporary) : null;
+    const session = persistent || temporary;
+    return sanitizeSession(session ? JSON.parse(session) : null);
   } catch {
     return null;
   }
 }
 
 export function ensureInitialUser() {
-  writeUsers(INITIAL_USERS);
+  const current = readUsers();
+  if (!current.length) {
+    writeUsers(INITIAL_USERS);
+    return INITIAL_USERS;
+  }
+
+  const byId = new Map(current.map((user) => [user.id, user]));
+  let changed = false;
+
+  for (const initial of INITIAL_USERS) {
+    if (!byId.has(initial.id)) {
+      byId.set(initial.id, initial);
+      changed = true;
+    }
+  }
+
+  const merged = [...byId.values()];
+  if (changed) writeUsers(merged);
+  return merged;
 }
 
 export function login(email, password, remember = false) {
-  ensureInitialUser();
-
-  const normalizedEmail = email.trim().toLowerCase();
-  const user = readUsers().find(
+  const users = ensureInitialUser();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const rawPassword = String(password || "");
+  const user = users.find(
     (item) =>
-      item.email.toLowerCase() === normalizedEmail &&
-      (item.password ?? item.clave) === password,
+      String(item.email || "").toLowerCase() === normalizedEmail &&
+      String(item.password ?? item.clave ?? "") === rawPassword,
   );
 
   if (!user) return { ok: false, message: "Correo o contraseña incorrectos." };
+  if (!VALID_ROLES.has(user.role)) {
+    return { ok: false, message: "La cuenta no tiene un rol válido." };
+  }
 
   const session = {
     id: user.id,
@@ -78,60 +107,73 @@ export function login(email, password, remember = false) {
     email: user.email,
     role: user.role,
   };
-  localStorage.removeItem(STORAGE_SESSION);
-  sessionStorage.removeItem(STORAGE_SESSION);
 
-  if (remember) {
-    localStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
-    localStorage.setItem(STORAGE_REMEMBER, "true");
-  } else {
-    sessionStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
-    localStorage.removeItem(STORAGE_REMEMBER);
-  }
+  logout();
+  const targetStorage = remember ? localStorage : sessionStorage;
+  targetStorage.setItem(STORAGE_SESSION, JSON.stringify(session));
+  if (remember) localStorage.setItem(STORAGE_REMEMBER, "true");
 
   return { ok: true, user: session };
 }
 
 export function register({ name, email, password }) {
-  ensureInitialUser();
-  const users = readUsers();
-  const normalizedEmail = email.trim().toLowerCase();
+  const users = ensureInitialUser();
+  const cleanName = String(name || "").trim();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const cleanPassword = String(password || "");
 
-  if (users.some((user) => user.email.toLowerCase() === normalizedEmail)) {
+  if (cleanName.length < 2) {
+    return { ok: false, message: "Ingresa un nombre válido." };
+  }
+  if (!normalizedEmail) {
+    return { ok: false, message: "Ingresa un correo válido." };
+  }
+  if (cleanPassword.length < 8) {
+    return { ok: false, message: "La contraseña debe tener al menos 8 caracteres." };
+  }
+  if (users.some((user) => String(user.email).toLowerCase() === normalizedEmail)) {
     return { ok: false, message: "Ya existe una cuenta con ese correo." };
   }
 
   const newUser = {
     id: `usr-${Date.now()}`,
-    name: name.trim(),
+    name: cleanName,
     email: normalizedEmail,
-    password,
+    password: cleanPassword,
     role: "operario",
   };
 
   writeUsers([...users, newUser]);
-  return { ok: true };
+  return { ok: true, user: { id: newUser.id, name: newUser.name, email: newUser.email, role: newUser.role } };
 }
 
 export function resetPassword(email, newPassword) {
-  ensureInitialUser();
-  const users = readUsers();
-  const normalizedEmail = email.trim().toLowerCase();
+  const users = ensureInitialUser();
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  const password = String(newPassword || "");
   const index = users.findIndex(
-    (user) => user.email.toLowerCase() === normalizedEmail,
+    (user) => String(user.email || "").toLowerCase() === normalizedEmail,
   );
 
   if (index === -1) {
     return { ok: false, message: "No existe una cuenta con ese correo." };
   }
+  if (password.length < 8) {
+    return { ok: false, message: "La contraseña debe tener al menos 8 caracteres." };
+  }
 
-  users[index] = { ...users[index], password: newPassword };
+  users[index] = { ...users[index], password };
   writeUsers(users);
   return { ok: true };
 }
 
 export function getSession() {
-  return readSession();
+  const session = readSession();
+  if (session) return session;
+
+  localStorage.removeItem(STORAGE_SESSION);
+  sessionStorage.removeItem(STORAGE_SESSION);
+  return null;
 }
 
 export function logout() {
@@ -141,14 +183,14 @@ export function logout() {
 }
 
 export function updateSessionRole(role) {
+  if (!VALID_ROLES.has(role)) return null;
   const session = getSession();
   if (!session) return null;
 
   const next = { ...session, role };
-  const storage = localStorage.getItem(STORAGE_SESSION)
-    ? localStorage
-    : sessionStorage;
+  const storage = localStorage.getItem(STORAGE_SESSION) ? localStorage : sessionStorage;
   storage.setItem(STORAGE_SESSION, JSON.stringify(next));
+  window.dispatchEvent(new Event("aiden-session-change"));
   return next;
 }
 
