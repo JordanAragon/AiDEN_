@@ -77,8 +77,8 @@ const money = (value) =>
 
 function Modal({ onClose, children }) {
   return (
-    <section className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
-      <article className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <section className="aiden-modal-fondo fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+      <article className="aiden-modal-entrada w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <header className="flex items-center justify-between border-b border-slate-100 px-5 py-4">
           <h2 className="font-semibold text-slate-900">Nuevo movimiento</h2>
           <button
