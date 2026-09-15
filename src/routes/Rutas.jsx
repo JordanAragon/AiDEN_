@@ -15,14 +15,17 @@ import InventarioOperativo from "../components/modulos/InventarioOperativo";
 import ProduccionOperativo from "../components/modulos/ProduccionOperativo";
 import PersonalOperativo from "../components/modulos/PersonalOperativo";
 import CostosOperativo from "../components/modulos/CostosOperativo";
+import CalidadOperativo from "../components/modulos/CalidadOperativo";
+import AmbientalOperativo from "../components/modulos/AmbientalOperativo";
+import TrazabilidadOperativo from "../components/modulos/TrazabilidadOperativo";
 
 function Configuracion() { return <ModuloOperativo key="configuracion" tipo="configuracion" />; }
 function Reportes() { return <ModuloOperativo key="reportes" tipo="reportes" />; }
 function Inventario() { return <InventarioOperativo />; }
 function Produccion() { return <ProduccionOperativo />; }
-function Trazabilidad() { return <ModuloOperativo key="trazabilidad" tipo="trazabilidad" />; }
-function Ambiental() { return <ModuloOperativo key="ambiental" tipo="ambiental" />; }
-function Calidad() { return <ModuloOperativo key="calidad" tipo="calidad" />; }
+function Trazabilidad() { return <TrazabilidadOperativo />; }
+function Ambiental() { return <AmbientalOperativo />; }
+function Calidad() { return <CalidadOperativo />; }
 function Costos() { return <CostosOperativo />; }
 function Personal() { return <PersonalOperativo />; }
 
@@ -35,18 +38,11 @@ export default function Rutas() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/terminos" element={<InformacionLegal />} />
-        <Route path="/privacidad" element={<InformacionLegal />} />
         <Route element={<RutaProtegida />}>
           <Route element={<PlantillaPrincipal />}>
-            <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]} />}>
-              <Route index element={<DashboardAdmin />} />
-            </Route>
-            <Route path="/dashboard-supervisor" element={<RutaProtegida roles={["admin", "supervisor"]} />}>
-              <Route index element={<DashboardSupervisor />} />
-            </Route>
-            <Route path="/dashboard-operario" element={<RutaProtegida roles={["admin", "supervisor", "operario"]} />}>
-              <Route index element={<DashboardOperario />} />
-            </Route>
+            <Route path="/dashboard-admin" element={<RutaProtegida roles={["admin"]} />}><Route index element={<DashboardAdmin />} /></Route>
+            <Route path="/dashboard-supervisor" element={<RutaProtegida roles={["admin", "supervisor"]} />}><Route index element={<DashboardSupervisor />} /></Route>
+            <Route path="/dashboard-operario" element={<RutaProtegida roles={["admin", "supervisor", "operario"]} />}><Route index element={<DashboardOperario />} /></Route>
             <Route path="/inventario" element={<Inventario />} />
             <Route path="/produccion" element={<Produccion />} />
             <Route path="/trazabilidad" element={<Trazabilidad />} />
