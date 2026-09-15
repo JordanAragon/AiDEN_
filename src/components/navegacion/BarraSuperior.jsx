@@ -3,16 +3,45 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getDashboardPath, getSession, logout } from "../../utilidades/autenticacion";
 
-const MODULOS=[{nombre:"Dashboard",ruta:"/dashboard-admin",roles:["admin","supervisor","operario"]},{nombre:"Inventario",ruta:"/inventario",roles:["admin","supervisor","operario"]},{nombre:"Producción",ruta:"/produccion",roles:["admin","supervisor","operario"]},{nombre:"Trazabilidad",ruta:"/trazabilidad",roles:["admin","supervisor","operario"]},{nombre:"Ambiental",ruta:"/ambiental",roles:["admin","supervisor","operario"]},{nombre:"Calidad",ruta:"/calidad",roles:["admin","supervisor","operario"]},{nombre:"Costos",ruta:"/costos",roles:["admin","supervisor"]},{nombre:"Personal",ruta:"/personal",roles:["admin","supervisor"]},{nombre:"Inteligencia",ruta:"/ia",roles:["admin","supervisor"]},{nombre:"Reportes",ruta:"/reportes",roles:["admin","supervisor"]},{nombre:"Configuración",ruta:"/configuracion",roles:["admin"]}];
+const MODULOS=[
+ {nombre:"Dashboard",ruta:"/dashboard-admin",roles:["admin","supervisor","operario"]},
+ {nombre:"Producción",ruta:"/produccion",roles:["admin","supervisor","operario"]},
+ {nombre:"Trazabilidad",ruta:"/trazabilidad",roles:["admin","supervisor","operario"]},
+ {nombre:"Ambiental",ruta:"/ambiental",roles:["admin","supervisor","operario"]},
+ {nombre:"Calidad",ruta:"/calidad",roles:["admin","supervisor","operario"]},
+ {nombre:"Inventario",ruta:"/inventario",roles:["admin","supervisor"]},
+ {nombre:"Costos",ruta:"/costos",roles:["admin","supervisor"]},
+ {nombre:"Personal",ruta:"/personal",roles:["admin","supervisor"]},
+ {nombre:"Inteligencia",ruta:"/ia",roles:["admin","supervisor"]},
+ {nombre:"Reportes",ruta:"/reportes",roles:["admin","supervisor"]},
+ {nombre:"Configuración",ruta:"/configuracion",roles:["admin"]},
+];
 const roleLabel={admin:"Administrador",supervisor:"Supervisor",operario:"Operario"};
 const leer=(tipo,fallback=[])=>{try{const value=localStorage.getItem(`aiden-${tipo}`);return value?JSON.parse(value):fallback}catch{return fallback}};
+const config=()=>({tempMin:18,tempMax:27,humMin:55,humMax:80,...leer("configuracion",{})});
 const CLAVE_NOTIFICACIONES="aiden-notificaciones-leidas";
 
 export default function BarraSuperior(){
- const navigate=useNavigate(); const session=getSession(); const role=session?.role||"operario"; const [showProfile,setShowProfile]=useState(false); const [showNotifs,setShowNotifs]=useState(false); const [showPalette,setShowPalette]=useState(false); const [search,setSearch]=useState(""); const [notificaciones,setNotificaciones]=useState([]);
+ const navigate=useNavigate(); const session=getSession(); const role=session?.role||"operario";
+ const [showProfile,setShowProfile]=useState(false); const [showNotifs,setShowNotifs]=useState(false); const [showPalette,setShowPalette]=useState(false); const [search,setSearch]=useState(""); const [notificaciones,setNotificaciones]=useState([]);
  const modulos=useMemo(()=>MODULOS.filter(m=>m.roles.includes(role)),[role]);
- const refrescar=()=>{const inventario=leer("inventario"),produccion=leer("produccion"),ambiental=leer("ambiental"),calidad=leer("calidad");let leidas=[];try{leidas=JSON.parse(localStorage.getItem(CLAVE_NOTIFICACIONES)||"[]")}catch{}const next=[];inventario.filter(r=>Number(r.stock)<=Number(r.minimo)).forEach(r=>next.push({id:`inv-${r.id}`,text:`Stock bajo: ${r.nombre}`,ruta:"/inventario"}));produccion.filter(r=>r.etapa==="Cosecha").forEach(r=>next.push({id:`lot-${r.id}`,text:`${r.lote} listo para cosecha`,ruta:"/produccion"}));ambiental.filter(r=>Number(r.temperatura)>27||Number(r.humedad)<55).forEach(r=>next.push({id:`amb-${r.id}`,text:`Condición ambiental fuera de rango: ${r.zona}`,ruta:"/ambiental"}));calidad.filter(r=>r.estadoManual!=="Cerrada"&&r.prioridad==="Alta").forEach(r=>next.push({id:`cal-${r.id}`,text:`Incidencia alta en ${r.lote||r.codigo}`,ruta:"/calidad"}));setNotificaciones(next.slice(0,8).map(n=>({...n,read:leidas.includes(n.id)})))};
- useEffect(()=>{refrescar();window.addEventListener("aiden-data-change",refrescar);window.addEventListener("storage",refrescar);return()=>{window.removeEventListener("aiden-data-change",refrescar);window.removeEventListener("storage",refrescar)}},[]);
+ const refrescar=()=>{
+  const cfg=config(); let leidas=[]; try{leidas=JSON.parse(localStorage.getItem(CLAVE_NOTIFICACIONES)||"[]")}catch{}
+  const inventario=leer("inventario"),produccion=leer("produccion"),ambiental=leer("ambiental"),calidad=leer("calidad");
+  const propios=produccion.filter(r=>r.responsable===session?.name);
+  const source=role==="operario"?[
+    ...propios.filter(r=>r.etapa==="Cosecha").map(r=>({id:`lot-${r.id}`,text:`${r.lote} está listo para cosecha`,ruta:"/produccion"})),
+    ...calidad.filter(r=>r.estado!=="Cerrada"&&r.prioridad==="Alta"&&propios.some(l=>l.lote===r.lote)).map(r=>({id:`cal-${r.id}`,text:`Incidencia alta en ${r.lote||r.codigo}`,ruta:"/calidad"})),
+    ...ambiental.filter(r=>Number(r.temperatura)<cfg.tempMin||Number(r.temperatura)>cfg.tempMax||Number(r.humedad)<cfg.humMin||Number(r.humedad)>cfg.humMax).map(r=>({id:`amb-${r.id}`,text:`Condición ambiental fuera de rango: ${r.zona}`,ruta:"/ambiental"}))
+  ]:[
+    ...(role==="admin"||role==="supervisor"?inventario.filter(r=>Number(r.stock)<=Number(r.minimo)).map(r=>({id:`inv-${r.id}`,text:`Stock bajo: ${r.nombre}`,ruta:"/inventario"})):[]),
+    ...produccion.filter(r=>r.etapa==="Cosecha").map(r=>({id:`lot-${r.id}`,text:`${r.lote} listo para cosecha`,ruta:"/produccion"})),
+    ...ambiental.filter(r=>Number(r.temperatura)<cfg.tempMin||Number(r.temperatura)>cfg.tempMax||Number(r.humedad)<cfg.humMin||Number(r.humedad)>cfg.humMax).map(r=>({id:`amb-${r.id}`,text:`Condición ambiental fuera de rango: ${r.zona}`,ruta:"/ambiental"})),
+    ...calidad.filter(r=>(r.estado??r.estadoManual)!=="Cerrada"&&r.prioridad==="Alta").map(r=>({id:`cal-${r.id}`,text:`Incidencia alta en ${r.lote||r.codigo}`,ruta:"/calidad"}))
+  ];
+  const enabled=cfg.notificaciones!=="Desactivadas"; setNotificaciones(enabled?source.slice(0,8).map(n=>({...n,read:leidas.includes(n.id)})):[]);
+ };
+ useEffect(()=>{refrescar();window.addEventListener("aiden-data-change",refrescar);window.addEventListener("aiden-config-change",refrescar);window.addEventListener("storage",refrescar);return()=>{window.removeEventListener("aiden-data-change",refrescar);window.removeEventListener("aiden-config-change",refrescar);window.removeEventListener("storage",refrescar)}},[role,session?.name]);
  useEffect(()=>{const key=e=>{if(e.key==="Escape"){setShowPalette(false);setShowNotifs(false);setShowProfile(false)}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==="k"){e.preventDefault();setShowPalette(v=>!v);setShowNotifs(false);setShowProfile(false);setSearch("")}};window.addEventListener("keydown",key);return()=>window.removeEventListener("keydown",key)},[]);
  const resultados=useMemo(()=>{const value=search.trim().toLowerCase();return value?modulos.filter(item=>item.nombre.toLowerCase().includes(value)):modulos},[search,modulos]);
  const irAModulo=ruta=>{navigate(ruta==="/dashboard-admin"?getDashboardPath(role):ruta);setSearch("");setShowPalette(false);setShowNotifs(false)};
