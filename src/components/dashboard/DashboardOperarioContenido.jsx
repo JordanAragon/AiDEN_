@@ -1,86 +1,35 @@
-import { CheckCircle2, Clock, AlertTriangle, Sprout, ListChecks, Circle } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { AlertTriangle, ArrowRight, CheckCircle2, Clock3, Droplets, ListChecks, Sprout } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { getSession } from "../../utilidades/autenticacion";
 
-const tareasIniciales = [
-  { id: 1, title: "Riego matutino · Invernadero A (Zona 1-3)", priority: "Alta", done: false, time: "08:00" },
-  { id: 2, title: "Aplicar fungicida en lote LT-2024-089", priority: "Alta", done: true, time: "09:30" },
-  { id: 3, title: "Trasplante de begonias · 40 unidades", priority: "Media", done: false, time: "10:00" },
-  { id: 4, title: "Registro ambiental de tarde · Sensores 1-4", priority: "Baja", done: false, time: "15:00" },
-  { id: 5, title: "Limpieza de herramientas y bodega", priority: "Baja", done: true, time: "16:30" },
-];
-
-const lotesIniciales = [
-  { code: "LT-2024-089", species: "Rosa roja (Rosa canina)", stage: "Floración", progress: 85 },
-  { code: "LT-2024-091", species: "Begonia bicolor", stage: "Trasplante", progress: 40 },
-  { code: "LT-2024-094", species: "Crisantemo amarillo", stage: "Germinación", progress: 20 },
-];
+const leer = (key, fallback = []) => { try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback; } catch { return fallback; } };
 
 export default function DashboardOperarioContenido() {
   const navigate = useNavigate();
-  const [tareasCompletadas, setTareasCompletadas] = useState(tareasIniciales.map((tarea) => tarea.done));
-  const completadas = tareasCompletadas.filter(Boolean).length;
-  const porcentaje = Math.round((completadas / tareasIniciales.length) * 100);
+  const session = getSession();
+  const nombre = session?.name || "Operario";
+  const [tareas, setTareas] = useState(() => leer("aiden-tareas"));
+  const lotes = useMemo(() => leer("aiden-produccion"), []);
+  const calidad = useMemo(() => leer("aiden-calidad"), []);
+  const ambiental = useMemo(() => leer("aiden-ambiental"), []);
+  const misTareas = tareas.filter(t => t.responsable === nombre || t.responsable === "Operario");
+  const misLotes = lotes.filter(l => l.responsable === nombre || l.responsable === "Operario");
+  const visiblesTareas = misTareas.length ? misTareas : tareas.slice(0, 4);
+  const visiblesLotes = misLotes.length ? misLotes : lotes.slice(0, 3);
+  const pendientes = visiblesTareas.filter(t => t.estado !== "Completada");
+  const hoy = new Date().toISOString().slice(0, 10);
+  const urgentes = pendientes.filter(t => t.prioridad === "Alta" || (t.fecha && t.fecha < hoy));
+  const completar = tarea => { const next = tareas.map(t => t.id === tarea.id ? { ...t, estado: t.estado === "Completada" ? "Pendiente" : "Completada" } : t); setTareas(next); localStorage.setItem("aiden-tareas", JSON.stringify(next)); window.dispatchEvent(new Event("aiden-data-change")); };
 
-  return (
-    <article className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold text-slate-800">Mi Panel · Operario</h1>
-        <p className="text-sm text-slate-500 mt-1">Seguimiento de tareas y lotes asignados.</p>
-      </header>
-
-      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: "Tareas del Día", value: `${completadas}/${tareasIniciales.length}`, icon: <ListChecks size={18} />, bg: "bg-emerald-50", color: "text-emerald-700" },
-          { label: "Lotes a Cargo", value: "3", icon: <Sprout size={18} />, bg: "bg-emerald-50", color: "text-emerald-600" },
-          { label: "Pendientes", value: String(tareasIniciales.length - completadas), icon: <Clock size={18} />, bg: "bg-amber-50", color: "text-amber-600" },
-          { label: "Incidencias", value: "1", icon: <AlertTriangle size={18} />, bg: "bg-red-50", color: "text-red-600" },
-        ].map((kpi) => (
-          <article key={kpi.label} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-            <span className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${kpi.bg} ${kpi.color}`}>{kpi.icon}</span>
-            <p className="text-2xl font-bold text-slate-800 font-sans">{kpi.value}</p>
-            <p className="text-xs text-slate-500 mt-1">{kpi.label}</p>
-          </article>
-        ))}
-      </section>
-
-      <section className="grid lg:grid-cols-5 gap-6">
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-3">
-          <header className="flex items-center justify-between mb-4">
-            <p className="font-semibold text-slate-800">Tareas de Hoy</p>
-            <span className="px-2 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">{porcentaje}% completado</span>
-          </header>
-          <section className="w-full bg-slate-100 rounded-full h-1.5 mb-5"><span className="block bg-emerald-600 h-1.5 rounded-full transition-all" style={{ width: `${porcentaje}%` }} /></section>
-          <section className="space-y-0">
-            {tareasIniciales.map((tarea, indice) => (
-              <article key={tarea.id} className="flex items-start gap-3 py-3.5 border-b border-slate-100 last:border-0 cursor-pointer group" onClick={() => { const next = [...tareasCompletadas]; next[indice] = !next[indice]; setTareasCompletadas(next); }}>
-                <span className="mt-0.5 shrink-0">{tareasCompletadas[indice] ? <CheckCircle2 size={18} className="text-emerald-500" /> : <Circle size={18} className="text-slate-300 group-hover:text-emerald-500 transition-colors" />}</span>
-                <section className="flex-1 min-w-0">
-                  <p className={`text-sm ${tareasCompletadas[indice] ? "line-through text-slate-400" : "text-slate-700"}`}>{tarea.title}</p>
-                  <section className="flex items-center gap-3 mt-1"><span className="flex items-center gap-1 text-xs text-slate-500"><Clock size={10} />{tarea.time}</span><span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ${tarea.priority === "Alta" ? "bg-red-100 text-red-700" : tarea.priority === "Media" ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-600"}`}>{tarea.priority}</span></section>
-                </section>
-              </article>
-            ))}
-          </section>
-        </section>
-
-        <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm lg:col-span-2">
-          <p className="font-semibold text-slate-800 mb-5">Mis Lotes</p>
-          <section className="space-y-4">
-            {lotesIniciales.map((lote) => (
-              <article key={lote.code} className="p-4 rounded-xl bg-slate-50 border border-slate-100">
-                <header className="flex items-start justify-between mb-2"><section><p className="text-xs font-mono font-semibold text-emerald-700">{lote.code}</p><p className="text-sm text-slate-800 mt-0.5">{lote.species}</p></section><span className="px-2 py-1 bg-emerald-100 text-emerald-800 text-[10px] font-semibold rounded-full">{lote.stage}</span></header>
-                <section className="mt-3"><section className="flex justify-between text-xs text-slate-500 mb-1"><span>Progreso</span><span>{lote.progress}%</span></section><section className="w-full bg-slate-200 rounded-full h-1.5"><span className="block bg-emerald-600 h-1.5 rounded-full transition-all" style={{ width: `${lote.progress}%` }} /></section></section>
-              </article>
-            ))}
-          </section>
-          <button type="button" onClick={() => navigate("/produccion")} className="w-full mt-4 px-4 py-2 border border-slate-200 hover:bg-slate-50 rounded-lg text-xs font-semibold flex items-center justify-center transition-colors">Ver todos los lotes</button>
-        </section>
-      </section>
-
-      <section className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm border-l-4" style={{ borderLeftColor: "#D97706" }}>
-        <article className="flex items-start gap-3"><AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" /><section><p className="text-sm font-semibold text-slate-800 mb-1">Incidencia abierta · Calidad</p><p className="text-sm text-slate-500">Presencia de hongos detectada en lote LT-2024-089. Registrada hoy. Estado: <strong>En revisión</strong>.</p><button type="button" onClick={() => navigate("/calidad")} className="text-xs text-emerald-600 hover:text-emerald-700 font-medium mt-2 transition-colors">Ver incidencia →</button></section></article>
-      </section>
-    </article>
-  );
+  return <article className="space-y-6">
+    <header className="flex flex-wrap items-start justify-between gap-4"><section><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">AiDEN / ejecución</p><h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">Mi jornada, {nombre}</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">Solo necesitas ver lo que puedes ejecutar: tareas, lotes a cargo, condiciones del área y registros de campo.</p></section><button type="button" onClick={()=>navigate("/trazabilidad")} className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-semibold text-slate-700 hover:border-emerald-200 hover:text-emerald-700"><ListChecks size={15}/>Registrar actividad</button></header>
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><Kpi icon={ListChecks} label="Mis tareas" value={visiblesTareas.length} detail={`${pendientes.length} pendientes`} tone={pendientes.length?"amber":"green"}/><Kpi icon={Sprout} label="Lotes a cargo" value={visiblesLotes.length} detail="Seguimiento de hoy"/><Kpi icon={AlertTriangle} label="Prioridades" value={urgentes.length} detail="Atención primero" tone={urgentes.length?"red":"green"}/><Kpi icon={Droplets} label="Alertas de campo" value={ambiental.filter(r=>Number(r.temperatura)>27||Number(r.humedad)<55).length} detail="Condiciones fuera de rango" tone="amber"/></section>
+    <section className="grid gap-4 lg:grid-cols-[1.15fr_.85fr]">
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><header className="flex items-center justify-between"><section><h2 className="font-semibold text-slate-900">Lo que tengo que hacer</h2><p className="mt-1 text-xs text-slate-400">Marca una tarea al completarla. El estado se comparte con supervisión.</p></section><Clock3 size={18} className="text-emerald-700"/></header><section className="mt-4 divide-y divide-slate-100">{visiblesTareas.map(t=><button type="button" key={t.id} onClick={()=>completar(t)} className="flex w-full items-start gap-3 py-3 text-left hover:bg-slate-50"><span className="mt-0.5 shrink-0">{t.estado === "Completada" ? <CheckCircle2 size={18} className="text-emerald-600"/> : <span className={`block h-[18px] w-[18px] rounded-full border-2 ${t.prioridad==="Alta"?"border-red-400":"border-slate-300"}`}/>}</span><span className="min-w-0 flex-1"><span className={`block text-sm font-medium ${t.estado === "Completada" ? "text-slate-400 line-through" : "text-slate-700"}`}>{t.titulo}</span><span className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-400"><span>{t.modulo}</span>{t.lote&&<span>· {t.lote}</span>}{t.fecha&&<span>· {t.fecha}</span>}<span className={t.prioridad==="Alta"?"font-semibold text-red-600":""}>· {t.prioridad}</span></span></span></button>)}{!visiblesTareas.length&&<p className="py-8 text-center text-sm text-slate-400">No tienes tareas asignadas.</p>}</section></article>
+      <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><header><h2 className="font-semibold text-slate-900">Mis lotes</h2><p className="mt-1 text-xs text-slate-400">Información necesaria para ejecutar el trabajo.</p></header><section className="mt-4 space-y-2">{visiblesLotes.map(l=><button type="button" key={l.id} onClick={()=>navigate("/produccion")} className="w-full rounded-xl border border-slate-100 bg-slate-50 p-3 text-left hover:border-emerald-200"><section className="flex items-center justify-between gap-3"><span><span className="block font-mono text-[10px] font-bold text-emerald-700">{l.lote}</span><span className="mt-1 block text-sm font-semibold text-slate-800">{l.cultivo}</span></span><span className="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700">{l.etapa}</span></section><section className="mt-3 flex justify-between text-[11px] text-slate-400"><span>{l.ubicacion}</span><span>{Number(l.cantidad||0).toLocaleString("es-CO")} plantas</span></section></button>)}{!visiblesLotes.length&&<p className="py-8 text-center text-sm text-slate-400">No tienes lotes asignados.</p>}</section></article>
+    </section>
+    <section className="grid gap-4 md:grid-cols-2"><article className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><header className="flex items-center gap-2"><AlertTriangle size={16} className="text-amber-700"/><h2 className="font-semibold text-amber-900">Antes de continuar</h2></header><p className="mt-2 text-sm leading-6 text-amber-900/80">Hay {urgentes.length} tarea{urgentes.length!==1?"s":""} que conviene atender primero. Las incidencias de calidad se registran desde su módulo para que supervisión pueda hacer seguimiento.</p><button type="button" onClick={()=>navigate("/calidad")} className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-amber-900">Ver calidad <ArrowRight size={12}/></button></article><article className="rounded-2xl bg-slate-950 p-4 text-white"><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-300">Principio de AiDEN</p><p className="mt-2 text-sm leading-6 text-white/70">El operario ejecuta y registra. La supervisión coordina. La administración decide. Tres vistas de una misma operación.</p></article></section>
+  </article>;
 }
+function Kpi({icon:Icon,label,value,detail,tone="green"}){const map={green:"bg-emerald-50 text-emerald-700",amber:"bg-amber-50 text-amber-700",red:"bg-red-50 text-red-700"};return <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><span className={`flex h-9 w-9 items-center justify-center rounded-xl ${map[tone]}`}><Icon size={17}/></span><p className="mt-4 text-2xl font-bold text-slate-950">{value}</p><p className="mt-1 text-xs font-semibold text-slate-600">{label}</p><p className="mt-1 text-[11px] text-slate-400">{detail}</p></article>}
