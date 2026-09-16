@@ -1,44 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
-
-const leer = (key, fallback = []) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-const defaults = { tempMin: 18, tempMax: 27, humMin: 55, humMax: 80 };
-
-const leerConfiguracion = () => ({
-  ...defaults,
-  ...leer("aiden-configuracion", {}),
-});
+import {
+  leerConfiguracion,
+  leerDato,
+  obtenerAlertasAmbientales,
+  suscribirseADatos,
+} from "../utilidades/datosOperativos";
 
 export function useDashboardOperacion() {
   const [version, setVersion] = useState(0);
 
-  useEffect(() => {
-    const refresh = () => setVersion((value) => value + 1);
-
-    window.addEventListener("aiden-data-change", refresh);
-    window.addEventListener("aiden-config-change", refresh);
-    window.addEventListener("storage", refresh);
-
-    return () => {
-      window.removeEventListener("aiden-data-change", refresh);
-      window.removeEventListener("aiden-config-change", refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
+  useEffect(() => suscribirseADatos(() => setVersion((value) => value + 1)), []);
 
   return useMemo(() => {
-    const lotes = leer("aiden-produccion");
-    const inventario = leer("aiden-inventario");
-    const calidad = leer("aiden-calidad");
-    const tareas = leer("aiden-tareas");
-    const ambiental = leer("aiden-ambiental");
+    const lotes = leerDato("aiden-produccion", []);
+    const inventario = leerDato("aiden-inventario", []);
+    const calidad = leerDato("aiden-calidad", []);
+    const tareas = leerDato("aiden-tareas", []);
+    const ambiental = leerDato("aiden-ambiental", []);
     const cfg = leerConfiguracion();
     const hoy = new Date().toISOString().slice(0, 10);
 
@@ -56,28 +34,18 @@ export function useDashboardOperacion() {
             row.prioridad === "Alta",
         )
         .map((row) => ({
-          text: `Calidad: ${row.codigo || row.id} · ${row.descripcion}`,
+          id: `cal-${row.id || row.codigo}`,
+          text: `Calidad: ${row.codigo || row.id} · ${row.descripcion || "Requiere revisión"}`,
           ruta: "/calidad",
           tipo: "Calidad",
         })),
       ...bajoMinimo.map((row) => ({
+        id: `inv-${row.id}`,
         text: `Inventario: ${row.nombre} bajo mínimo`,
         ruta: "/inventario",
         tipo: "Inventario",
       })),
-      ...ambiental
-        .filter(
-          (row) =>
-            Number(row.temperatura) < Number(cfg.tempMin) ||
-            Number(row.temperatura) > Number(cfg.tempMax) ||
-            Number(row.humedad) < Number(cfg.humMin) ||
-            Number(row.humedad) > Number(cfg.humMax),
-        )
-        .map((row) => ({
-          text: `Ambiental: ${row.zona} fuera de rango`,
-          ruta: "/ambiental",
-          tipo: "Ambiental",
-        })),
+      ...obtenerAlertasAmbientales(ambiental, cfg),
     ];
 
     const carga = [...new Set(tareas.map((task) => task.responsable).filter(Boolean))].map(
