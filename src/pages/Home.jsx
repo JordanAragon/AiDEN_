@@ -19,6 +19,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardHeroPreview from "../components/dashboard/DashboardHeroPreview";
 import "../estilos/landing-aiden.css";
+import "../estilos/landing-aiden-premium.css";
 
 const modulos = [
   [Sprout, "Producción", "Lotes, etapas y actividades productivas.", "/produccion"],
