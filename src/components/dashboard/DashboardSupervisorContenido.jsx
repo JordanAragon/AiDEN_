@@ -1,4 +1,3 @@
-import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   ArrowRight,
@@ -9,89 +8,11 @@ import {
   Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const leer = (key, fallback = []) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-};
-
-const defaults = { tempMin: 18, tempMax: 27, humMin: 55, humMax: 80 };
-const config = () => ({ ...defaults, ...leer("aiden-configuracion", {}) });
+import { useDashboardOperacion } from "../../hooks/useDashboardOperacion";
 
 export default function DashboardSupervisorContenido() {
   const navigate = useNavigate();
-  const [version, setVersion] = useState(0);
-
-  useEffect(() => {
-    const refresh = () => setVersion((value) => value + 1);
-    window.addEventListener("aiden-data-change", refresh);
-    window.addEventListener("aiden-config-change", refresh);
-    window.addEventListener("storage", refresh);
-    return () => {
-      window.removeEventListener("aiden-data-change", refresh);
-      window.removeEventListener("aiden-config-change", refresh);
-      window.removeEventListener("storage", refresh);
-    };
-  }, []);
-
-  const data = useMemo(
-    () => ({
-      lotes: leer("aiden-produccion"),
-      inventario: leer("aiden-inventario"),
-      calidad: leer("aiden-calidad"),
-      tareas: leer("aiden-tareas"),
-      ambiental: leer("aiden-ambiental"),
-    }),
-    [version],
-  );
-
-  const cfg = useMemo(() => config(), [version]);
-  const pendientes = data.tareas.filter((task) => task.estado !== "Completada");
-  const hoy = new Date().toISOString().slice(0, 10);
-  const atrasadas = pendientes.filter((task) => task.fecha && task.fecha < hoy);
-  const alertas = [
-    ...data.calidad
-      .filter(
-        (row) =>
-          (row.estado ?? row.estadoManual) !== "Cerrada" &&
-          row.prioridad === "Alta",
-      )
-      .map((row) => ({
-        text: `Calidad: ${row.codigo || row.id} · ${row.descripcion}`,
-        ruta: "/calidad",
-      })),
-    ...data.inventario
-      .filter((row) => Number(row.stock) <= Number(row.minimo))
-      .map((row) => ({
-        text: `Inventario: ${row.nombre} bajo mínimo`,
-        ruta: "/inventario",
-      })),
-    ...data.ambiental
-      .filter(
-        (row) =>
-          Number(row.temperatura) < Number(cfg.tempMin) ||
-          Number(row.temperatura) > Number(cfg.tempMax) ||
-          Number(row.humedad) < Number(cfg.humMin) ||
-          Number(row.humedad) > Number(cfg.humMax),
-      )
-      .map((row) => ({
-        text: `Ambiental: ${row.zona} fuera de rango`,
-        ruta: "/ambiental",
-      })),
-  ];
-  const carga = [...new Set(data.tareas.map((task) => task.responsable).filter(Boolean))].map(
-    (nombre) => ({
-      nombre,
-      total: data.tareas.filter(
-        (task) =>
-          task.responsable === nombre && task.estado !== "Completada",
-      ).length,
-    }),
-  );
+  const data = useDashboardOperacion();
 
   return (
     <article className="space-y-6">
@@ -122,35 +43,31 @@ export default function DashboardSupervisorContenido() {
         <Kpi
           icon={Sprout}
           label="Lotes activos"
-          value={data.lotes.filter((lot) => lot.estado !== "Inactivo").length}
-          detail={`${data.lotes.filter((lot) => lot.etapa === "Cosecha").length} en cosecha`}
+          value={data.lotesActivos.length}
+          detail={`${data.lotesCosecha.length} en cosecha`}
         />
         <Kpi
           icon={ClipboardList}
           label="Trabajo pendiente"
-          value={pendientes.length}
+          value={data.pendientes.length}
           detail={
-            atrasadas.length
-              ? `${atrasadas.length} atrasadas`
+            data.atrasadas.length
+              ? `${data.atrasadas.length} atrasadas`
               : "Sin tareas vencidas"
           }
-          tone={atrasadas.length ? "red" : "blue"}
+          tone={data.atrasadas.length ? "red" : "blue"}
         />
         <Kpi
           icon={AlertTriangle}
           label="Alertas"
-          value={alertas.length}
-          detail={`Operación, ambiente y calidad · ${cfg.tempMin}–${cfg.tempMax} °C`}
-          tone={alertas.length ? "amber" : "green"}
+          value={data.alertas.length}
+          detail={`Operación, ambiente y calidad · ${data.cfg.tempMin}–${data.cfg.tempMax} °C`}
+          tone={data.alertas.length ? "amber" : "green"}
         />
         <Kpi
           icon={Package}
           label="Insumos bajo mínimo"
-          value={
-            data.inventario.filter(
-              (row) => Number(row.stock) <= Number(row.minimo),
-            ).length
-          }
+          value={data.bajoMinimo.length}
           detail="Coordina reposición"
           tone="amber"
         />
@@ -161,38 +78,28 @@ export default function DashboardSupervisorContenido() {
           <header className="flex items-center justify-between">
             <section>
               <h2 className="font-semibold text-slate-900">Carga de trabajo</h2>
-              <p className="mt-1 text-xs text-slate-400">
-                Tareas pendientes por responsable
-              </p>
+              <p className="mt-1 text-xs text-slate-400">Tareas pendientes por responsable</p>
             </section>
             <Users size={18} className="text-emerald-700" />
           </header>
 
           <section className="mt-5 space-y-4">
-            {carga.map((persona) => (
+            {data.carga.map((persona) => (
               <section key={persona.nombre}>
                 <section className="mb-1 flex justify-between text-xs">
-                  <span className="font-medium text-slate-700">
-                    {persona.nombre}
-                  </span>
-                  <span className="font-semibold text-slate-500">
-                    {persona.total} pendientes
-                  </span>
+                  <span className="font-medium text-slate-700">{persona.nombre}</span>
+                  <span className="font-semibold text-slate-500">{persona.total} pendientes</span>
                 </section>
                 <section className="h-2 rounded-full bg-slate-100">
                   <span
                     className="block h-full rounded-full bg-emerald-600"
-                    style={{
-                      width: `${Math.min(100, persona.total * 14)}%`,
-                    }}
+                    style={{ width: `${Math.min(100, persona.total * 14)}%` }}
                   />
                 </section>
               </section>
             ))}
-            {!carga.length && (
-              <p className="text-sm text-slate-400">
-                Aún no hay tareas asignadas.
-              </p>
+            {!data.carga.length && (
+              <p className="text-sm text-slate-400">Aún no hay tareas asignadas.</p>
             )}
           </section>
 
@@ -215,22 +122,18 @@ export default function DashboardSupervisorContenido() {
           </header>
 
           <section className="mt-4 space-y-2">
-            {alertas.slice(0, 5).map((alerta) => (
+            {data.alertas.slice(0, 5).map((alerta) => (
               <button
                 type="button"
                 key={alerta.text}
                 onClick={() => navigate(alerta.ruta)}
                 className="w-full rounded-xl border border-slate-100 bg-slate-50 p-3 text-left hover:border-amber-200"
               >
-                <span className="block text-sm text-slate-700">
-                  {alerta.text}
-                </span>
-                <span className="mt-1 block text-[11px] font-semibold text-emerald-700">
-                  Abrir →
-                </span>
+                <span className="block text-sm text-slate-700">{alerta.text}</span>
+                <span className="mt-1 block text-[11px] font-semibold text-emerald-700">Abrir →</span>
               </button>
             ))}
-            {!alertas.length && (
+            {!data.alertas.length && (
               <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700">
                 No hay alertas que requieran intervención.
               </p>
@@ -276,9 +179,7 @@ function Kpi({ icon: Icon, label, value, detail, tone = "green" }) {
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-      <span
-        className={`flex h-9 w-9 items-center justify-center rounded-xl ${map[tone]}`}
-      >
+      <span className={`flex h-9 w-9 items-center justify-center rounded-xl ${map[tone]}`}>
         <Icon size={17} />
       </span>
       <p className="mt-4 text-2xl font-bold text-slate-950">{value}</p>
