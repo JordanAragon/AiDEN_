@@ -14,7 +14,6 @@ const read = (key, fallback) => { try { const raw = localStorage.getItem(key); r
 const write = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 const uid = () => `CST-${Date.now().toString(36).toUpperCase()}`;
 const money = (value) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(Number(value) || 0);
-
 function Modal({ onClose, children }) { return <section className="aiden-modal-fondo fixed inset-0 z-50 flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm"><article className="aiden-modal-entrada w-full max-w-lg rounded-2xl border border-slate-200 bg-white shadow-2xl"><header className="flex items-center justify-between border-b border-slate-100 px-5 py-4"><h2 className="font-semibold text-slate-900">Nuevo movimiento</h2><button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-400 hover:bg-slate-100" aria-label="Cerrar"><X size={16} /></button></header><section className="p-5">{children}</section></article></section>; }
 function Input({ label, ...props }) { return <label className="block text-sm font-medium text-slate-600">{label}<input {...props} className="mt-1 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" /></label>; }
 function Select({ label, children, ...props }) { return <label className="block text-sm font-medium text-slate-600">{label}<select {...props} className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500">{children}</select></label>; }
@@ -35,8 +34,9 @@ export default function CostosOperativo() {
     const ingreso = rows.filter((r) => r.lote === l.lote && r.tipo === "ingreso").reduce((a, r) => a + Number(r.valor || 0), 0);
     return { lote: l.lote, gasto, ingreso, plantas: Number(l.cantidad || 0), costoPlanta: l.cantidad ? gasto / Number(l.cantidad) : 0, resultado: ingreso - gasto };
   }).filter((r) => r.gasto || r.ingreso), [lotes, rows]);
+  const gastosAsociados = porLote.reduce((sum, row) => sum + (row.gasto > 0 ? row.gasto : 0), 0);
   const plantasConCostos = porLote.reduce((sum, row) => sum + (row.gasto > 0 ? row.plantas : 0), 0);
-  const costoPlantaPonderado = plantasConCostos ? totalGastos / plantasConCostos : 0;
+  const costoPlantaPonderado = plantasConCostos ? gastosAsociados / plantasConCostos : 0;
   const categorias = Object.entries(gastos.reduce((a, r) => { a[r.categoria] = (a[r.categoria] || 0) + Number(r.valor || 0); return a; }, {})).map(([categoria, total]) => ({ categoria, total }));
   const filtered = rows.filter((r) => filtro === "Todos" || r.tipo === filtro);
   const save = (data) => { setRows(data); write(KEY, data); window.dispatchEvent(new Event("aiden-data-change")); };
@@ -51,7 +51,6 @@ export default function CostosOperativo() {
     {modal && <Modal onClose={() => setModal(false)}><CostForm lotes={lotes} onSubmit={add} /></Modal>}
   </section>;
 }
-
 function CostForm({ lotes, onSubmit }) {
   const [f, setF] = useState({ tipo: "gasto", concepto: "", categoria: "Insumos", valor: "", fecha: new Date().toISOString().slice(0, 10), lote: "" });
   return <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); onSubmit(f); }}><section className="grid gap-3 sm:grid-cols-2"><Select label="Tipo" value={f.tipo} onChange={(e) => setF({ ...f, tipo: e.target.value })}><option value="gasto">Gasto</option><option value="ingreso">Ingreso</option></Select><Select label="Categoría" value={f.categoria} onChange={(e) => setF({ ...f, categoria: e.target.value })}><option>Insumos</option><option>Mano de obra</option><option>Transporte</option><option>Servicios</option><option>Otros</option></Select></section><Input label="Concepto" value={f.concepto} onChange={(e) => setF({ ...f, concepto: e.target.value })} required /><section className="grid gap-3 sm:grid-cols-2"><Input label="Valor COP" type="number" min="1" value={f.valor} onChange={(e) => setF({ ...f, valor: e.target.value })} required /><Input label="Fecha" type="date" value={f.fecha} onChange={(e) => setF({ ...f, fecha: e.target.value })} /></section><Select label="Lote asociado" value={f.lote} onChange={(e) => setF({ ...f, lote: e.target.value })}><option value="">Sin lote</option>{lotes.map((l) => <option key={l.id}>{l.lote}</option>)}</Select><button className="w-full rounded-xl bg-emerald-700 py-2.5 text-sm font-semibold text-white">Guardar movimiento</button></form>;
