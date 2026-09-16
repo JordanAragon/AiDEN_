@@ -20,7 +20,7 @@ export default function PlantillaPrincipal() {
   }, []);
 
   return (
-    <section className="flex h-screen overflow-hidden bg-[#f5f7f5] font-sans text-slate-900">
+    <section className="aiden-app-shell flex h-screen overflow-hidden bg-[#f5f7f5] font-sans text-slate-900">
       <BarraLateral />
       <section className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <BarraSuperior />
