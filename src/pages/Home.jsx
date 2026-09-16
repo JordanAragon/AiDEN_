@@ -18,33 +18,33 @@ import {
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import DashboardHeroPreview from "../components/dashboard/DashboardHeroPreview";
-import "../estilos/landing-aiden.css";
-import "../estilos/landing-aiden-premium.css";
-import "../estilos/landing-aiden-nav-fix.css";
+import "../estilos/landing-aiden-redesign.css";
 
 const modulos = [
-  [Sprout, "Producción", "Lotes, etapas y actividades productivas.", "/produccion"],
-  [Package, "Inventario", "Existencias, movimientos y niveles de stock.", "/inventario"],
-  [GitBranch, "Trazabilidad", "El recorrido de cada lote, sin perder contexto.", "/trazabilidad"],
-  [Thermometer, "Ambiental", "Condiciones que acompañan el crecimiento.", "/ambiental"],
-  [ShieldCheck, "Calidad", "Incidencias, severidad y seguimiento.", "/calidad"],
-  [CircleDollarSign, "Costos", "Gastos y comportamiento de la operación.", "/costos"],
-  [Users, "Personal", "Equipo, responsabilidades y carga de trabajo.", "/personal"],
-  [BarChart3, "Reportes", "Convierte registros en lectura operativa.", "/reportes"],
-  [ClipboardList, "Configuración", "Ajustes que mantienen el sistema en contexto.", "/configuracion"],
+  [Sprout, "Producción", "Lotes, etapas y actividades", "Saber qué está ocurriendo con cada lote y en qué punto del proceso se encuentra.", "/produccion", "01"],
+  [Package, "Inventario", "Existencias y movimientos", "Mantener el stock visible para registrar consumos, entradas y niveles mínimos.", "/inventario", "02"],
+  [GitBranch, "Trazabilidad", "Historia de cada lote", "Conservar el recorrido de un lote y relacionar los eventos que forman parte de su operación.", "/trazabilidad", "03"],
+  [Thermometer, "Ambiental", "Condiciones de cultivo", "Registrar las variables ambientales que acompañan el seguimiento del vivero.", "/ambiental", "04"],
+  [ShieldCheck, "Calidad", "Incidencias y seguimiento", "Detectar, registrar y dar seguimiento a situaciones que requieren atención.", "/calidad", "05"],
+  [CircleDollarSign, "Costos", "Gastos operativos", "Tener una lectura de los costos registrados para entender el comportamiento de la operación.", "/costos", "06"],
+  [Users, "Personal", "Equipo y responsabilidades", "Organizar personas, responsabilidades y carga de trabajo dentro de la operación.", "/personal", "07"],
+  [BarChart3, "Reportes", "Lectura operativa", "Convertir los registros del sistema en información que facilite el seguimiento.", "/reportes", "08"],
+  [ClipboardList, "Configuración", "Contexto del sistema", "Ajustar usuarios y parámetros para que AiDEN responda a la operación real.", "/configuracion", "09"],
 ];
 
 const roles = [
-  ["01", "Administrador", "Control global, configuración, usuarios y visión completa."],
-  ["02", "Supervisor", "Coordinación, seguimiento, incidencias y decisiones operativas."],
-  ["03", "Operario", "Ejecución diaria, registros y tareas asignadas."],
+  ["01", "Administrador", "Visión global", "Usuarios, configuración y control integral del sistema."],
+  ["02", "Supervisor", "Seguimiento", "Coordinación, incidencias y lectura de la operación."],
+  ["03", "Operario", "Ejecución", "Tareas y registros que forman parte del trabajo diario."],
 ];
 
-const signals = [
-  ["Producción", "Lotes y etapas"],
-  ["Ambiente", "Temperatura y humedad"],
-  ["Calidad", "Incidencias abiertas"],
-  ["Inventario", "Stock y mínimos"],
+const connections = [
+  ["Producción", "El lote define el contexto"],
+  ["Inventario", "Los insumos acompañan el proceso"],
+  ["Ambiental", "El entorno queda registrado"],
+  ["Calidad", "Las incidencias tienen seguimiento"],
+  ["Trazabilidad", "Los eventos conservan su historia"],
+  ["Costos", "Los gastos dejan de estar aislados"],
 ];
 
 export default function Inicio() {
@@ -52,160 +52,72 @@ export default function Inicio() {
   const cerrarMenu = () => setMenuAbierto(false);
 
   return (
-    <div className="landing-aiden">
-      <header className={`aiden-nav ${menuAbierto ? "is-open" : ""}`}>
-        <nav className="aiden-shell aiden-nav-inner" aria-label="Navegación principal">
+    <div className="aiden-redesign">
+      <header className="aiden-header">
+        <nav className="aiden-shell aiden-header-inner" aria-label="Navegación principal">
           <Link to="/" className="aiden-brand" onClick={cerrarMenu}>
-            <span className="aiden-brand-mark"><Leaf size={16} strokeWidth={2.3} /></span>
+            <span className="aiden-brand-mark" aria-hidden="true"><Leaf size={15} strokeWidth={2.4} /></span>
             <span>AiDEN</span>
           </Link>
-          <div className="aiden-nav-links">
-            <a href="#producto">Producto</a>
-            <a href="#sistema">Sistema</a>
-            <a href="#modulos">Módulos</a>
-            <a href="#roles">Roles</a>
-          </div>
-          <div className="aiden-nav-actions">
-            <Link to="/login" className="aiden-nav-login">Iniciar sesión</Link>
-            <Link to="/signup" className="aiden-btn aiden-btn-primary">Entrar a AiDEN <ArrowRight size={14} /></Link>
-          </div>
-          <button type="button" className="aiden-menu-btn" aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"} aria-expanded={menuAbierto} onClick={() => setMenuAbierto((abierto) => !abierto)}>
-            {menuAbierto ? <X size={20} /> : <Menu size={20} />}
-          </button>
+          <div className="aiden-header-links"><a href="#operacion">La operación</a><a href="#sistema">El sistema</a><a href="#modulos">Módulos</a><a href="#roles">Roles</a></div>
+          <div className="aiden-header-actions"><Link to="/login" className="aiden-header-login">Iniciar sesión</Link><Link to="/signup" className="aiden-button aiden-button-dark">Entrar a AiDEN <ArrowRight size={14} /></Link></div>
+          <button type="button" className="aiden-menu" aria-label={menuAbierto ? "Cerrar menú" : "Abrir menú"} aria-expanded={menuAbierto} onClick={() => setMenuAbierto((open) => !open)}>{menuAbierto ? <X size={19} /> : <Menu size={19} />}</button>
         </nav>
-        <div className="aiden-mobile-menu">
-          <a href="#producto" onClick={cerrarMenu}>Producto</a>
-          <a href="#sistema" onClick={cerrarMenu}>Sistema</a>
-          <a href="#modulos" onClick={cerrarMenu}>Módulos</a>
-          <a href="#roles" onClick={cerrarMenu}>Roles</a>
-          <div className="aiden-mobile-actions">
-            <Link to="/login" className="aiden-btn aiden-btn-ghost">Iniciar sesión</Link>
-            <Link to="/signup" className="aiden-btn aiden-btn-primary">Entrar a AiDEN <ArrowRight size={14} /></Link>
-          </div>
+        <div className={`aiden-mobile-panel ${menuAbierto ? "is-visible" : ""}`} aria-hidden={!menuAbierto}>
+          <a href="#operacion" onClick={cerrarMenu}>La operación</a><a href="#sistema" onClick={cerrarMenu}>El sistema</a><a href="#modulos" onClick={cerrarMenu}>Módulos</a><a href="#roles" onClick={cerrarMenu}>Roles</a>
+          <Link to="/login" className="aiden-button aiden-button-ghost" onClick={cerrarMenu}>Iniciar sesión</Link>
+          <Link to="/signup" className="aiden-button aiden-button-dark" onClick={cerrarMenu}>Entrar a AiDEN <ArrowRight size={14} /></Link>
         </div>
       </header>
 
       <main>
         <section className="aiden-hero" id="inicio">
-          <div className="aiden-hero-grid aiden-shell">
-            <div className="aiden-hero-copy">
-              <div className="aiden-hero-kicker"><span className="aiden-pulse" /> Plataforma operativa para viveros</div>
-              <h1>El vivero, visto como un <em>sistema.</em></h1>
-              <p className="aiden-lead">AiDEN conecta producción, ambiente, inventario, calidad, trazabilidad y costos alrededor de la unidad que realmente importa: el lote.</p>
-              <div className="aiden-hero-actions">
-                <Link to="/signup" className="aiden-btn aiden-btn-primary aiden-btn-large">Explorar la plataforma <ArrowRight size={16} /></Link>
-                <a href="#sistema" className="aiden-hero-note"><span>01</span> Ver cómo se conecta</a>
-              </div>
-              <div className="aiden-hero-index">
-                <span>01</span><span>Contexto</span><i /><span>02</span><span>Control</span><i /><span>03</span><span>Acción</span>
-              </div>
-            </div>
-            <div className="aiden-hero-product" id="producto">
-              <DashboardHeroPreview />
-              <div className="aiden-product-caption"><span>Producto real</span><span>Datos locales del sistema</span></div>
-            </div>
+          <div className="aiden-shell aiden-hero-grid">
+            <article className="aiden-hero-copy">
+              <p className="aiden-label"><span className="aiden-live-dot" /> Plataforma operativa para viveros</p>
+              <h1>El vivero no es una colección de datos. <em>Es una operación.</em></h1>
+              <p className="aiden-hero-lead">AiDEN reúne producción, inventario, trazabilidad, ambiente, calidad, costos y personal en una sola experiencia para entender qué está pasando y actuar con contexto.</p>
+              <div className="aiden-hero-actions"><Link to="/signup" className="aiden-button aiden-button-dark aiden-button-large">Explorar AiDEN <ArrowRight size={15} /></Link><a href="#operacion" className="aiden-text-link"><span>01</span> Entender la operación</a></div>
+              <div className="aiden-hero-meta" aria-label="Características de la plataforma"><span>03 roles</span><i /><span>09 módulos</span><i /><span>01 contexto operativo</span></div>
+            </article>
+            <figure className="aiden-hero-product" aria-label="Vista real del dashboard de AiDEN">
+              <div className="aiden-product-frame"><DashboardHeroPreview /><span className="aiden-product-corner">LIVE / PRODUCT VIEW</span></div>
+              <figcaption><span>Interfaz real del sistema</span><span>El contenido depende de los datos registrados</span></figcaption>
+            </figure>
           </div>
-          <div className="aiden-hero-marquee" aria-hidden="true"><div>PRODUCCIÓN · AMBIENTE · CALIDAD · INVENTARIO · TRAZABILIDAD · COSTOS · PERSONAL · REPORTES ·</div></div>
+          <div className="aiden-hero-rule" aria-hidden="true"><span>PRODUCCIÓN</span><i /><span>CONTEXTO</span><i /><span>CONTROL</span><i /><span>ACCIÓN</span></div>
         </section>
 
-        <section className="aiden-intro" id="sistema">
-          <div className="aiden-shell aiden-intro-grid">
-            <div className="aiden-overline">01 / SISTEMA</div>
-            <div className="aiden-intro-copy">
-              <h2>La información aislada no explica una operación.</h2>
-              <p>Un lote cambia de etapa. Consume insumos. Vive bajo unas condiciones ambientales. Puede generar una incidencia. Todo eso forma parte de la misma historia.</p>
-              <div className="aiden-signal-grid">
-                {signals.map(([title, value], index) => <div key={title} className="aiden-signal"><span>0{index + 1}</span><strong>{title}</strong><small>{value}</small></div>)}
-              </div>
-            </div>
+        <section className="aiden-problem" id="operacion">
+          <div className="aiden-shell aiden-problem-grid">
+            <header><p className="aiden-index">02 / LA OPERACIÓN</p><h2>El problema no es tener datos. <em>Es tenerlos separados.</em></h2></header>
+            <div className="aiden-problem-copy"><p className="aiden-kicker">Lo que AiDEN intenta ordenar</p><p>Un lote cambia de etapa. Consume insumos. Tiene unas condiciones. Puede generar una incidencia. Una persona registra lo sucedido. Y alguien necesita entender todo eso después.</p><p>La propuesta de AiDEN parte de esa relación: registrar cada pieza sin perder el contexto que permite leer la operación completa.</p><a href="#sistema" className="aiden-text-link"><span>03</span> Ver cómo se conecta</a></div>
           </div>
+          <div className="aiden-shell aiden-problem-strip"><article><span>01</span><strong>Registro</strong><p>Lo que sucede queda documentado.</p></article><article><span>02</span><strong>Contexto</strong><p>Cada registro pertenece a una operación.</p></article><article><span>03</span><strong>Seguimiento</strong><p>Las señales relevantes pueden revisarse.</p></article><article><span>04</span><strong>Decisión</strong><p>La información llega con una historia detrás.</p></article></div>
         </section>
 
-        <section className="aiden-system-showcase">
+        <section className="aiden-system" id="sistema">
           <div className="aiden-shell">
-            <div className="aiden-showcase-head">
-              <div><p className="aiden-eyebrow"><span /> Una sola operación</p><h2>De los registros al contexto.</h2></div>
-              <p>La interfaz se organiza según cómo funciona el vivero, no según cómo se ve una plantilla de software.</p>
-            </div>
-            <div className="aiden-system-grid">
-              <article className="aiden-system-card aiden-system-card-large">
-                <div className="aiden-card-top"><span>Centro de operación</span><span className="aiden-card-dot" /></div>
-                <div className="aiden-system-visual">
-                  <div className="aiden-system-ring ring-one" /><div className="aiden-system-ring ring-two" />
-                  <div className="aiden-system-core"><Sprout size={21} /><strong>Lote</strong><b>024</b><small>unidad de contexto</small></div>
-                  <span className="aiden-node node-one">Producción</span><span className="aiden-node node-two">Ambiente</span><span className="aiden-node node-three">Calidad</span><span className="aiden-node node-four">Inventario</span>
-                </div>
-                <footer><span>Todo parte del lote.</span><ArrowUpRight size={15} /></footer>
-              </article>
-              <article className="aiden-system-card aiden-system-card-dark"><span className="aiden-card-index">02</span><Leaf size={24} /><h3>Registrar con contexto.</h3><p>Cada evento conserva responsable, momento y relación con la operación.</p></article>
-              <article className="aiden-system-card aiden-system-card-light"><span className="aiden-card-index">03</span><BarChart3 size={24} /><h3>Leer lo que está pasando.</h3><p>Los datos dejan de ser filas sueltas y pasan a formar señales útiles.</p></article>
-            </div>
+            <header className="aiden-section-header aiden-section-header-dark"><div><p className="aiden-index">03 / EL SISTEMA</p><h2>Una operación.<br /><em>Un contexto.</em></h2></div><p>El lote funciona como punto de lectura para conectar eventos que, de otra forma, aparecen como registros aislados.</p></header>
+            <article className="aiden-operation-map">
+              <div className="aiden-map-visual"><span className="aiden-map-ring aiden-map-ring-one" /><span className="aiden-map-ring aiden-map-ring-two" />{connections.map(([name], index) => <span className={`aiden-map-node aiden-map-node-${index + 1}`} key={name}>{name}</span>)}<span className="aiden-map-core"><Sprout size={22} /><small>CONTEXTO</small><strong>Lote</strong><b>024</b></span></div>
+              <div className="aiden-map-copy"><p className="aiden-kicker aiden-kicker-light">Cómo se relaciona la información</p><div className="aiden-connection-list">{connections.map(([name, text], index) => <article key={name}><span>0{index + 1}</span><div><strong>{name}</strong><p>{text}</p></div><ArrowUpRight size={14} /></article>)}</div></div>
+            </article>
           </div>
         </section>
 
-        <section className="aiden-feature-band">
-          <div className="aiden-shell aiden-feature-grid">
-            <div><span>UNA HISTORIA</span><strong>Para cada lote.</strong></div>
-            <div><span>UNA OPERACIÓN</span><strong>Para cada rol.</strong></div>
-            <div><span>UNA VISTA</span><strong>Para decidir.</strong></div>
-          </div>
-        </section>
+        <section className="aiden-evidence"><div className="aiden-shell aiden-evidence-grid"><p className="aiden-index">04 / DE LA INFORMACIÓN A LA ACCIÓN</p><header><h2>No se trata de mostrar más. <em>Se trata de entender mejor.</em></h2><p>La interfaz debe hacer visible lo que importa, reducir la búsqueda manual y dejar claro dónde mirar después.</p></header><div className="aiden-evidence-cards"><article><span>01</span><h3>Estado</h3><p>Qué está activo, qué está pendiente y qué necesita atención.</p></article><article><span>02</span><h3>Relación</h3><p>Qué registro pertenece a qué lote, etapa, responsable o evento.</p></article><article><span>03</span><h3>Seguimiento</h3><p>Qué información puede revisarse para continuar el trabajo.</p></article></div></div></section>
 
-        <section className="aiden-capabilities" id="modulos">
-          <div className="aiden-shell">
-            <div className="aiden-section-head aiden-section-head-split">
-              <div><p className="aiden-eyebrow"><span /> Módulos</p><h2>Todo el sistema, sin ruido.</h2></div>
-              <p>Nueve áreas conectadas para cubrir la operación sin convertirla en un laberinto de pantallas.</p>
-            </div>
-            <div className="aiden-module-grid">
-              {modulos.map(([Icon, nombre, descripcion, ruta], index) => (
-                <Link to={ruta} className={`aiden-module-card module-${index + 1}`} key={nombre}>
-                  <span className="aiden-module-number">{String(index + 1).padStart(2, "0")}</span>
-                  <span className="aiden-module-icon"><Icon size={18} /></span>
-                  <div><h3>{nombre}</h3><p>{descripcion}</p></div>
-                  <ArrowUpRight size={16} className="aiden-module-arrow" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+        <section className="aiden-modules" id="modulos"><div className="aiden-shell"><header className="aiden-section-header"><div><p className="aiden-index">05 / MÓDULOS</p><h2>Todo el sistema.<br /><em>Cada pieza tiene trabajo.</em></h2></div><p>Las nueve áreas forman una misma operación. El objetivo no es llenar la interfaz de funciones, sino poner cada una donde aporta contexto.</p></header><div className="aiden-bento">{modulos.map(([Icon, nombre, subtitulo, descripcion, ruta, number], index) => <Link to={ruta} key={nombre} className={`aiden-bento-card bento-${index + 1}`}><span className="aiden-bento-number">{number}</span><span className="aiden-bento-icon"><Icon size={18} /></span><span className="aiden-bento-kind">{subtitulo}</span><h3>{nombre}</h3><p>{descripcion}</p><ArrowUpRight size={16} className="aiden-bento-arrow" /></Link>)}</div></div></section>
 
-        <section className="aiden-roles" id="roles">
-          <div className="aiden-shell">
-            <div className="aiden-section-head aiden-section-head-split">
-              <div><p className="aiden-eyebrow"><span /> Roles</p><h2>Misma operación.<br /><em>Distinto enfoque.</em></h2></div>
-              <p>Cada perfil encuentra las herramientas que necesita para hacer su trabajo, sin cargar con funciones que no le corresponden.</p>
-            </div>
-            <div className="aiden-role-list">
-              {roles.map(([number, name, text]) => <article key={name} className="aiden-role-row"><span className="aiden-role-number">{number}</span><h3>{name}</h3><p>{text}</p><span className="aiden-role-mark"><Check size={15} /></span></article>)}
-            </div>
-          </div>
-        </section>
+        <section className="aiden-roles" id="roles"><div className="aiden-shell"><header className="aiden-section-header aiden-section-header-compact"><div><p className="aiden-index">06 / ROLES</p><h2>La misma operación.<br /><em>La vista que corresponde.</em></h2></div><p>La experiencia cambia según la responsabilidad dentro del vivero, evitando cargar a cada perfil con el mismo nivel de información.</p></header><div className="aiden-role-table">{roles.map(([number, role, focus, description]) => <article key={role} className="aiden-role-row"><span className="aiden-role-number">{number}</span><h3>{role}</h3><strong>{focus}</strong><p>{description}</p><Check size={15} aria-hidden="true" /></article>)}</div></div></section>
 
-        <section className="aiden-final-cta">
-          <div className="aiden-final-noise" aria-hidden="true" />
-          <div className="aiden-shell aiden-final-layout">
-            <div className="aiden-final-copy">
-              <p className="aiden-eyebrow"><span /> AiDEN</p>
-              <h2>Cuando todo está conectado, <em>la operación se ve distinta.</em></h2>
-              <p>Explora una plataforma diseñada para entender el vivero como un sistema vivo y trazable.</p>
-              <div className="aiden-final-actions"><Link to="/signup" className="aiden-btn aiden-btn-light aiden-btn-large">Entrar a AiDEN <ArrowRight size={16} /></Link><span>03 roles · 09 módulos · 01 sistema</span></div>
-            </div>
-            <div className="aiden-final-product">
-              <DashboardHeroPreview />
-              <div className="aiden-final-float"><span className="aiden-pulse" /> Sistema conectado <strong>ahora</strong></div>
-            </div>
-          </div>
-        </section>
+        <section className="aiden-clarity"><div className="aiden-shell aiden-clarity-grid"><p className="aiden-index">07 / ANTES DE ENTRAR</p><header><h2>Las preguntas importantes deberían responderse <em>antes del botón.</em></h2></header><div className="aiden-clarity-list"><article><span>¿Qué es AiDEN?</span><p>Una plataforma de gestión operativa para organizar y seguir la actividad de un vivero.</p></article><article><span>¿Para quién está pensada?</span><p>Para equipos que participan en la operación y necesitan distintas vistas según su responsabilidad.</p></article><article><span>¿Qué conecta?</span><p>Producción, inventario, trazabilidad, ambiente, calidad, costos, personal, reportes y configuración.</p></article><article><span>¿Qué se ve primero?</span><p>El estado de la operación y las señales que requieren seguimiento, usando los registros existentes del sistema.</p></article></div></div></section>
+
+        <section className="aiden-final"><div className="aiden-shell aiden-final-inner"><div className="aiden-final-copy"><p className="aiden-index aiden-index-light">08 / ENTRAR</p><h2>Cuando el vivero se entiende como un sistema, <em>la interfaz deja de ser un laberinto.</em></h2><p>Explora AiDEN y recorre la operación desde el dato hasta el contexto.</p><Link to="/signup" className="aiden-button aiden-button-light aiden-button-large">Entrar a AiDEN <ArrowRight size={15} /></Link></div><aside className="aiden-final-stamp" aria-label="Resumen de AiDEN"><span>AiDEN</span><strong>09</strong><small>módulos conectados</small><i /><strong>03</strong><small>roles operativos</small><i /><b>01</b><small>experiencia</small></aside></div></section>
       </main>
 
-      <footer className="aiden-footer">
-        <div className="aiden-shell aiden-footer-inner">
-          <div className="aiden-footer-brand"><span className="aiden-brand-mark"><Leaf size={15} /></span><span>AiDEN</span><small>Gestión operativa para viveros</small></div>
-          <div className="aiden-footer-links"><Link to="/terminos">Términos</Link><Link to="/privacidad">Privacidad</Link><Link to="/login">Ingresar</Link></div>
-          <span className="aiden-footer-copy">Proyecto académico · 2026</span>
-        </div>
-      </footer>
+      <footer className="aiden-footer"><div className="aiden-shell aiden-footer-inner"><Link to="/" className="aiden-brand"><span className="aiden-brand-mark" aria-hidden="true"><Leaf size={14} /></span><span>AiDEN</span></Link><span>Gestión operativa para viveros</span><div><Link to="/terminos">Términos</Link><Link to="/privacidad">Privacidad</Link><Link to="/login">Ingresar</Link></div><small>Proyecto académico · 2026</small></div></footer>
     </div>
   );
 }
