@@ -20,6 +20,7 @@ import { Link } from "react-router-dom";
 import DashboardHeroPreview from "../components/dashboard/DashboardHeroPreview";
 import "../estilos/landing-aiden.css";
 import "../estilos/landing-aiden-premium.css";
+import "../estilos/landing-aiden-nav-fix.css";
 
 const modulos = [
   [Sprout, "Producción", "Lotes, etapas y actividades productivas.", "/produccion"],
