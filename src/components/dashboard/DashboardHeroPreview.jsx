@@ -9,6 +9,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useDashboardOperacion } from "../../hooks/useDashboardOperacion";
+import "../../estilos/dashboard-hero-preview.css";
 
 const chartHeights = [28, 42, 35, 58, 52, 72, 64, 84];
 
@@ -18,7 +19,9 @@ function MiniChart({ value }) {
       {chartHeights.map((height, index) => (
         <span
           key={index}
-          style={{ height: `${Math.max(18, Math.min(100, height + Number(value || 0) * 1.5))}%` }}
+          style={{
+            height: `${Math.max(18, Math.min(100, height + Number(value || 0) * 1.5))}%`,
+          }}
         />
       ))}
     </div>
@@ -135,7 +138,11 @@ export default function DashboardHeroPreview() {
             </span>
             <div>
               <strong>{alertas ? "Atención requerida" : "Operación estable"}</strong>
-              <span>{alertas ? data.alertas[0].text : "No hay alertas activas en los registros actuales."}</span>
+              <span>
+                {alertas
+                  ? data.alertas[0].text
+                  : "No hay alertas activas en los registros actuales."}
+              </span>
             </div>
             {alertas ? <ArrowRight size={12} /> : <Package size={12} />}
           </div>
