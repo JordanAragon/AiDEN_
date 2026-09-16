@@ -4,7 +4,6 @@ import {
   ArrowUpRight,
   BarChart3,
   Check,
-  ChevronDown,
   CircleDollarSign,
   ClipboardList,
   GitBranch,
@@ -19,6 +18,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import DashboardHeroPreview from "../components/dashboard/DashboardHeroPreview";
 import "../estilos/landing-aiden.css";
 
 const modulos = [
@@ -50,21 +50,6 @@ const roles = [
     text: "Registra lo que sucede durante el trabajo diario del vivero.",
   },
 ];
-
-function MiniChart() {
-  return (
-    <div className="aiden-mini-chart" aria-hidden="true">
-      <span style={{ height: "28%" }} />
-      <span style={{ height: "42%" }} />
-      <span style={{ height: "35%" }} />
-      <span style={{ height: "58%" }} />
-      <span style={{ height: "52%" }} />
-      <span style={{ height: "72%" }} />
-      <span style={{ height: "64%" }} />
-      <span style={{ height: "84%" }} />
-    </div>
-  );
-}
 
 export default function Inicio() {
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -124,38 +109,8 @@ export default function Inicio() {
             </div>
 
             <div className="aiden-hero-product" id="producto">
-              <div className="aiden-product-shell">
-                <header className="aiden-product-topbar">
-                  <div className="aiden-product-brand"><span><Leaf size={11} /></span> AiDEN</div>
-                  <div className="aiden-product-path">Operación / Lote 024</div>
-                  <div className="aiden-product-status"><span /> En línea</div>
-                </header>
-                <div className="aiden-product-main">
-                  <aside className="aiden-product-sidebar" aria-hidden="true"><span className="active" /><span /><span /><span /><span /><span /></aside>
-                  <div className="aiden-product-content">
-                    <div className="aiden-product-heading">
-                      <div><small>Resumen de operación</small><h2>Buenos días, Supervisor.</h2></div>
-                      <span className="aiden-product-date">Hoy · 10:42</span>
-                    </div>
-                    <div className="aiden-stat-grid">
-                      <article><small>Lotes activos</small><strong>24</strong><span>+3 esta semana</span></article>
-                      <article><small>Incidencias</small><strong>02</strong><span>1 requiere atención</span></article>
-                      <article><small>Actividades</small><strong>18</strong><span>8 pendientes</span></article>
-                    </div>
-                    <div className="aiden-dashboard-lower">
-                      <article className="aiden-lote-card">
-                        <header><div><small>Lote destacado</small><h3>Lote 024</h3></div><span className="aiden-chip">En crecimiento</span></header>
-                        <div className="aiden-lote-meta"><span>Tomate</span><span>Invernadero 03</span><span>Actualizado hoy</span></div>
-                        <div className="aiden-progress-row"><span>Progreso del lote</span><strong>68%</strong></div>
-                        <div className="aiden-progress"><span /></div>
-                        <div className="aiden-timeline"><span className="done" /><span className="done" /><span className="current" /><span /><span /></div>
-                      </article>
-                      <article className="aiden-chart-card"><header><div><small>Actividad</small><strong>Esta semana</strong></div><ChevronDown size={14} /></header><MiniChart /><footer><span><i /> Registros</span><b>+18%</b></footer></article>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div className="aiden-product-caption"><span>Vista de producto</span><span>Dashboard operativo</span></div>
+              <DashboardHeroPreview />
+              <div className="aiden-product-caption"><span>Vista de producto</span><span>Datos del dashboard real</span></div>
             </div>
           </div>
         </section>
